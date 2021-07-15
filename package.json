@@ -1,10 +1,10 @@
 {
-  "name": "pwa-lit-template",
+  "name": "rogue-laze",
   "version": "0.1.0",
   "private": true,
-  "description": "A template for building Progressive Web Applications using LitElement and Vaadin Router",
+  "description": "Rogue Laze is a rogue-like that requires no player interaction at all to progress.",
   "license": "MIT",
-  "repository": "github:IBM/pwa-lit-template",
+  "repository": "github:mmartensson/rogue-laze",
   "engines": {
     "node": ">=14.0.0"
   },
