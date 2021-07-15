@@ -2,6 +2,8 @@
 >
 > This project is currently in development.
 
+[![CI](https://github.com/mmartensson/rogue-laze/workflows/CI/badge.svg)](https://github.com/mmartensson/rogue-laze/actions)
+
 # rogue-laze
 
 Rogue Laze is a rogue-like that requires no player interaction at all to progress. A random seed and a starting point in time
