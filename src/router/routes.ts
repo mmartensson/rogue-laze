@@ -25,6 +25,14 @@ export const routes: Route[] = [
     },
   },
   {
+    path: '/progress',
+    name: 'progress',
+    component: 'page-progress',
+    action: async () => {
+      await import('../pages/page-progress.js');
+    },
+  },
+  {
     path: '(.*)',
     name: 'not-found',
     component: 'page-not-found',

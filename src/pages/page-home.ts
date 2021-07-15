@@ -1,10 +1,3 @@
-/**
- * Copyright (c) IBM, Corp. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import { html, css, customElement } from 'lit-element';
 
 import config from '../config.js';
@@ -21,23 +14,16 @@ export class PageHome extends PageElement {
   render() {
     return html`
       <section>
-        <h1>Home</h1>
+        <h1>Start game</h1>
 
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eligendi,
-          delectus? Unde, sit. Fuga modi ea praesentium. Nemo dicta qui, magnam
-          cum dolorum excepturi beatae explicabo quidem fugiat ullam blanditiis
-          minima!
-        </p>
+        <form action="progress">
+          <input name="session" placeholder="Existing session" />
+          <input type="submit" value="Continue" />
+        </form>
 
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eligendi,
-          delectus? Unde, sit. Fuga modi ea praesentium. Nemo dicta qui, magnam
-          cum dolorum excepturi beatae explicabo quidem fugiat ullam blanditiis
-          minima!
-        </p>
+        <hr />
 
-        <p>Here you can see <a href="/error">the not found page</a>.</p>
+        <button>Start new</button>
       </section>
     `;
   }
@@ -46,7 +32,7 @@ export class PageHome extends PageElement {
     return {
       title: config.appName,
       titleTemplate: null,
-      description: config.appDescription,
+      description: `${config.appName} start page`,
     };
   }
 }
