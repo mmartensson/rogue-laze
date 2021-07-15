@@ -22,20 +22,15 @@ export class PageProgress extends PageElement {
     .icon {
       width: 32px;
       height: 32px;
-      background-image: url(../images/icon-set.png);
-
+      background-image: url(../images/sprites.png);
       transform: scale(2);
     }
   `;
 
   render() {
-    const iw = 32;
-    const ih = 32;
+    const SIZE = 32;
 
-    // Weapons start at iy=69
-    // Armors start at iy=98
-    const ix = 0 * iw;
-    const iy = 98 * ih;
+    const [ix, iy] = [0, 3];
 
     return html`
       <section>
@@ -43,7 +38,7 @@ export class PageProgress extends PageElement {
 
         <div
           class="icon"
-          style="background-position: top -${iy}px left -${ix}px"
+          style="background-position: top -${iy * SIZE}px left -${ix * SIZE}px"
         ></div>
       </section>
     `;
