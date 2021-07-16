@@ -117,7 +117,7 @@ export const DamageTypeToVariantColumn = new Map<DamageType, VariantColumn>([
 
 export type Speed = 'fast' | 'medium' | 'slow';
 
-export type Dice = 4 | 6 | 8 | 12 | 20 | 100;
+export type Dice = 4 | 6 | 8 | 10 | 12 | 20 | 100;
 
 export interface BaseWeapon {
   id: string;
@@ -127,6 +127,8 @@ export interface BaseWeapon {
   damageType: DamageType;
   damageDice: Dice;
   speed: Speed;
+  price: number;
+  weight: number;
 }
 
 export const WeaponDagger: BaseWeapon = {
@@ -137,6 +139,8 @@ export const WeaponDagger: BaseWeapon = {
   damageType: 'piercing',
   damageDice: 4,
   speed: 'fast',
+  price: 200,
+  weight: 1,
 };
 
 export const WeaponSword1h: BaseWeapon = {
@@ -147,6 +151,8 @@ export const WeaponSword1h: BaseWeapon = {
   damageType: 'slashing',
   damageDice: 8,
   speed: 'medium',
+  price: 1500,
+  weight: 3,
 };
 
 export const WeaponSword2h: BaseWeapon = {
@@ -157,6 +163,8 @@ export const WeaponSword2h: BaseWeapon = {
   damageType: 'slashing',
   damageDice: 12,
   speed: 'slow',
+  price: 5000,
+  weight: 6,
 };
 
 export const WeaponFlail: BaseWeapon = {
@@ -167,4 +175,177 @@ export const WeaponFlail: BaseWeapon = {
   damageType: 'bludgeoning',
   damageDice: 8,
   speed: 'medium',
+  price: 1000,
+  weight: 2,
 };
+
+export const WeaponAxe1h: BaseWeapon = {
+  id: 'axe1h',
+  names: ['Handaxe'],
+  location: 'either',
+  rows: [WeaponRow.Axe],
+  damageType: 'slashing',
+  damageDice: 6,
+  speed: 'medium',
+  price: 500,
+  weight: 2,
+};
+
+export const WeaponAxe2h: BaseWeapon = {
+  id: 'axe2h',
+  names: ['Greateaxe'],
+  location: 'main-2h',
+  rows: [WeaponRow.Axe],
+  damageType: 'slashing',
+  damageDice: 12,
+  speed: 'slow',
+  price: 3000,
+  weight: 7,
+};
+
+export const WeaponWhip: BaseWeapon = {
+  id: 'whip',
+  names: ['Whip'],
+  location: 'either',
+  rows: [WeaponRow.Whip],
+  damageType: 'slashing',
+  damageDice: 4,
+  speed: 'fast',
+  price: 200,
+  weight: 3,
+};
+
+export const WeaponStaff: BaseWeapon = {
+  id: 'staff',
+  names: ['Quarterstaff'],
+  location: 'main-2h',
+  rows: [WeaponRow.Staff],
+  damageType: 'bludgeoning',
+  damageDice: 8,
+  speed: 'slow',
+  price: 20,
+  weight: 4,
+};
+
+export const WeaponLongbow: BaseWeapon = {
+  id: 'longbow',
+  names: ['Longbow'],
+  location: 'main-2h',
+  rows: [WeaponRow.LongBow],
+  damageType: 'piercing',
+  damageDice: 8,
+  speed: 'medium',
+  price: 5000,
+  weight: 2,
+};
+
+export const WeaponCrossbow: BaseWeapon = {
+  id: 'crossbow',
+  names: ['Crossbow'],
+  location: 'main-2h',
+  rows: [WeaponRow.Crossbow],
+  damageType: 'piercing',
+  damageDice: 10,
+  speed: 'slow',
+  price: 5000,
+  weight: 18,
+};
+
+// Skipping WeaponRow.Gun/Claw/Glove
+
+export const WeaponSpear: BaseWeapon = {
+  id: 'spear',
+  names: ['Spear'],
+  location: 'main-2h',
+  rows: [WeaponRow.Spear],
+  damageType: 'piercing',
+  damageDice: 8,
+  speed: 'medium',
+  price: 100,
+  weight: 3,
+};
+
+export const WeaponMace: BaseWeapon = {
+  id: 'mace',
+  names: ['Mace'],
+  location: 'main-1h',
+  rows: [WeaponRow.Mace],
+  damageType: 'bludgeoning',
+  damageDice: 6,
+  speed: 'medium',
+  price: 500,
+  weight: 4,
+};
+
+// Skipping WeaponRow.Rod
+
+export const WeaponClub1h: BaseWeapon = {
+  id: 'club1h',
+  names: ['Club'],
+  location: 'main-1h',
+  rows: [WeaponRow.Club],
+  damageType: 'bludgeoning',
+  damageDice: 4,
+  speed: 'medium',
+  price: 10,
+  weight: 2,
+};
+
+export const WeaponClub2h: BaseWeapon = {
+  id: 'club2h',
+  names: ['Greatclub'],
+  location: 'main-2h',
+  rows: [WeaponRow.Club],
+  damageType: 'bludgeoning',
+  damageDice: 8,
+  speed: 'slow',
+  price: 20,
+  weight: 10,
+};
+
+// Skipping WeaponRow.Chain/IronPipe
+
+export const WeaponSlingshot: BaseWeapon = {
+  id: 'dagger',
+  names: ['Sling'],
+  location: 'main-2h',
+  rows: [WeaponRow.Slingshot],
+  damageType: 'bludgeoning',
+  damageDice: 4,
+  speed: 'medium',
+  price: 20,
+  weight: 0,
+};
+
+// Skipping WeaponRow.Shotgun/Rifle/Chainsaw/MagicBolt/StunRod/Book
+
+export const WeaponScythe: BaseWeapon = {
+  id: 'axe2h',
+  names: ['Scythe'],
+  location: 'main-2h',
+  rows: [WeaponRow.Scythe],
+  damageType: 'slashing',
+  damageDice: 10,
+  speed: 'slow',
+  price: 70,
+  weight: 10,
+};
+
+export const Weapons = [
+  WeaponDagger,
+  WeaponSword1h,
+  WeaponSword2h,
+  WeaponFlail,
+  WeaponAxe1h,
+  WeaponAxe2h,
+  WeaponWhip,
+  WeaponStaff,
+  WeaponLongbow,
+  WeaponCrossbow,
+  WeaponSpear,
+  WeaponMace,
+  WeaponClub1h,
+  WeaponClub2h,
+  WeaponSlingshot,
+  WeaponScythe,
+];
