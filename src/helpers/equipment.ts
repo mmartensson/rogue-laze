@@ -361,6 +361,7 @@ export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
 export interface WeaponInstance extends BaseWeapon {
   rarity: Rarity;
+  secondaryDamageType?: DamageType;
 }
 
 // FIXME: Move somewhere relevant
@@ -368,17 +369,47 @@ const MAX_LEVEL = 100;
 
 export const randomRarity = (alea: AleaPRNG, playerLevel: number): Rarity => {
   const { random } = alea;
-  const value = random() / Math.log(MAX_LEVEL - playerLevel + 1);
+  const raw = random();
+  const adjusted = raw / Math.log10(MAX_LEVEL - playerLevel + 1);
 
-  if (value > 0.9) return 'legendary';
+  if (adjusted > 0.9) return 'legendary';
 
-  if (value > 0.7) return 'epic';
+  if (adjusted > 0.7) return 'epic';
 
-  if (value > 0.25) return 'rare';
+  if (adjusted > 0.25) return 'rare';
 
-  if (value > 0.15) return 'uncommon';
+  if (adjusted > 0.15) return 'uncommon';
 
   return 'common';
+};
+
+export const randomSecondaryDamageType = (
+  alea: AleaPRNG,
+  playerLevel: number
+): DamageType | undefined => {
+  const { random } = alea;
+  const raw = random();
+  const adjusted = raw / Math.log10(MAX_LEVEL - playerLevel + 1);
+
+  if (adjusted < 0.8) return undefined;
+
+  const value = random();
+
+  if (value > 0.9) return 'acid';
+
+  if (value > 0.8) return 'cold';
+
+  if (value > 0.7) return 'fire';
+
+  if (value > 0.6) return 'lightning';
+
+  if (value > 0.5) return 'force';
+
+  if (value > 0.4) return 'necrotic';
+
+  if (value > 0.3) return 'radiant';
+
+  return 'poison';
 };
 
 export const randomWeapon = (
@@ -386,9 +417,11 @@ export const randomWeapon = (
   playerLevel: number
 ): WeaponInstance => {
   const rarity = randomRarity(alea, playerLevel);
+  const secondaryDamageType = randomSecondaryDamageType(alea, playerLevel);
 
   return {
     ...randomBaseWeapon(alea),
     rarity,
+    secondaryDamageType,
   };
 };

@@ -4,7 +4,11 @@ import { html, css, customElement, state } from 'lit-element';
 
 import config from '../config.js';
 import { fromBase62 } from '../helpers/base62';
-import { randomWeapon } from '../helpers/equipment';
+import {
+  DamageTypeToVariantColumn,
+  randomWeapon,
+  VariantColumn,
+} from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
 
@@ -34,6 +38,7 @@ export class PageProgress extends PageElement {
     }
 
     let wy = 1;
+    let wx = 0;
     let wr = 'common';
 
     if (session != this.session) {
@@ -47,8 +52,13 @@ export class PageProgress extends PageElement {
 
       this.alea = mkAlea(this.session);
 
-      const weapon = randomWeapon(this.alea, 40);
+      const weapon = randomWeapon(this.alea, 80);
       wy = weapon.rows[0];
+      wx = (
+        weapon.secondaryDamageType
+          ? DamageTypeToVariantColumn.get(weapon.secondaryDamageType)
+          : VariantColumn.Regular
+      ) as VariantColumn;
       wr = weapon.rarity;
     }
 
@@ -64,7 +74,7 @@ export class PageProgress extends PageElement {
           </tr>
 
           <tr>
-            <td><app-sprite rarity=${wr} x="0" y=${wy}></app-sprite></td>
+            <td><app-sprite rarity=${wr} x=${wx} y=${wy}></app-sprite></td>
             <td><app-sprite dimmed x="0" y="37"></app-sprite></td>
             <td><app-sprite dimmed x="0" y="29"></app-sprite></td>
           </tr>
