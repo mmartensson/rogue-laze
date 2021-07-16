@@ -83,9 +83,88 @@ export enum VariantColumn {
   Cold = 10,
 
   Lightning = 11,
-  Thunder = 12,
-  Force = 13,
-  Poison = 14,
+  Force = 12,
+  Poison = 13,
+  Acid = 14,
   Radiant = 15,
   Necrotic = 16,
 }
+
+export type WeaponLocation = 'main-1h' | 'main-2h' | 'offhand' | 'either';
+export type DamageType =
+  | 'acid'
+  | 'bludgeoning'
+  | 'cold'
+  | 'fire'
+  | 'force'
+  | 'lightning'
+  | 'necrotic'
+  | 'piercing'
+  | 'poison'
+  | 'radiant'
+  | 'slashing';
+
+export const DamageTypeToVariantColumn = new Map<DamageType, VariantColumn>([
+  ['acid', VariantColumn.Acid],
+  ['cold', VariantColumn.Cold],
+  ['fire', VariantColumn.Fire],
+  ['force', VariantColumn.Force],
+  ['lightning', VariantColumn.Lightning],
+  ['necrotic', VariantColumn.Necrotic],
+  ['poison', VariantColumn.Poison],
+  ['radiant', VariantColumn.Radiant],
+]);
+
+export type Speed = 'fast' | 'medium' | 'slow';
+
+export type Dice = 4 | 6 | 8 | 12 | 20 | 100;
+
+export interface BaseWeapon {
+  id: string;
+  names: string[];
+  location: WeaponLocation;
+  rows: WeaponRow[];
+  damageType: DamageType;
+  damageDice: Dice;
+  speed: Speed;
+}
+
+export const WeaponDagger: BaseWeapon = {
+  id: 'dagger',
+  names: ['Dagger', 'Knife', 'Shiv'],
+  location: 'either',
+  rows: [WeaponRow.Dagger],
+  damageType: 'piercing',
+  damageDice: 4,
+  speed: 'fast',
+};
+
+export const WeaponSword1h: BaseWeapon = {
+  id: 'sword1h',
+  names: ['Longsword', 'Scimitar', 'Rapier'],
+  location: 'main-1h',
+  rows: [WeaponRow.Sword1, WeaponRow.Sword3],
+  damageType: 'slashing',
+  damageDice: 8,
+  speed: 'medium',
+};
+
+export const WeaponSword2h: BaseWeapon = {
+  id: 'sword2h',
+  names: ['Greatsword', 'Claymore'],
+  location: 'main-2h',
+  rows: [WeaponRow.Sword2, WeaponRow.Sword4],
+  damageType: 'slashing',
+  damageDice: 12,
+  speed: 'slow',
+};
+
+export const WeaponFlail: BaseWeapon = {
+  id: 'flail',
+  names: ['Flail'],
+  location: 'main-1h',
+  rows: [WeaponRow.Dagger],
+  damageType: 'bludgeoning',
+  damageDice: 8,
+  speed: 'medium',
+};
