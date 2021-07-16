@@ -25,7 +25,7 @@ export const routes: Route[] = [
     },
   },
   {
-    path: '/progress',
+    path: '/progress/:session',
     name: 'progress',
     component: 'page-progress',
     action: async () => {

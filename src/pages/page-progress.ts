@@ -1,8 +1,10 @@
 /* eslint-disable import/extensions */
+import { mkAlea } from '@spissvinkel/alea';
 import { html, css, customElement, state } from 'lit-element';
 
 import config from '../config.js';
-import { PageElement } from '../helpers/page-element.js';
+import { fromBase62 } from '../helpers/base62';
+import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
 
 export type ActionType = 'battle';
@@ -13,7 +15,7 @@ export interface Action {
 
 @customElement('page-progress')
 export class PageProgress extends PageElement {
-  @state() session = null;
+  @state() session = '';
   @state() actions: Action[] = [];
 
   static styles = css`
@@ -23,6 +25,25 @@ export class PageProgress extends PageElement {
   `;
 
   render() {
+    const session = this.location?.params?.session as string;
+    if (session == null) {
+      // FIXME: Properly complain and direct user to the home page
+      return html`No session`;
+    }
+
+    if (session != this.session) {
+      this.session = session;
+      // TODO: Implement an async recreation of all events leading up to now
+      // using timestamp and seed. Show some kind of progress indicator.
+      // Some nifty promise will trigger the regular content to be shown.
+
+      const t0 = fromBase62(this.session);
+      console.log('t0', t0);
+
+      const { uint32 } = mkAlea(this.session);
+      console.log('Session seeded first random: ', uint32());
+    }
+
     return html`
       <section>
         <h1>Progress</h1>

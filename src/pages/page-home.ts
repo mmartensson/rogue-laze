@@ -1,7 +1,10 @@
+/* eslint-disable import/extensions */
 import { html, css, customElement } from 'lit-element';
 
 import config from '../config.js';
+import { toBase62 } from '../helpers/base62';
 import { PageElement } from '../helpers/page-element.js';
+import { urlForName } from '../router';
 
 @customElement('page-home')
 export class PageHome extends PageElement {
@@ -12,6 +15,12 @@ export class PageHome extends PageElement {
   `;
 
   render() {
+    const startNew = () => {
+      const session = toBase62(+Date.now());
+      const url = urlForName('progress', { session });
+      window.location.href = url;
+    };
+
     return html`
       <section>
         <h1>Start game</h1>
@@ -23,7 +32,7 @@ export class PageHome extends PageElement {
 
         <hr />
 
-        <button>Start new</button>
+        <button @click=${startNew}>Start new</button>
       </section>
     `;
   }
