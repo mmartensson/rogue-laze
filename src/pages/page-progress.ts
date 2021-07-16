@@ -1,7 +1,9 @@
+/* eslint-disable import/extensions */
 import { html, css, customElement, state } from 'lit-element';
 
 import config from '../config.js';
 import { PageElement } from '../helpers/page-element.js';
+import '../components/app-sprite';
 
 export type ActionType = 'battle';
 
@@ -18,28 +20,32 @@ export class PageProgress extends PageElement {
     section {
       padding: 1rem;
     }
-
-    .icon {
-      width: 32px;
-      height: 32px;
-      background-image: url(../images/sprites.png);
-      transform: scale(2);
-    }
   `;
 
   render() {
-    const SIZE = 32;
-
-    const [ix, iy] = [0, 3];
-
     return html`
       <section>
         <h1>Progress</h1>
 
-        <div
-          class="icon"
-          style="background-position: top -${iy * SIZE}px left -${ix * SIZE}px"
-        ></div>
+        <table>
+          <tr>
+            <td><app-sprite dimmed x="2" y="49"></app-sprite></td>
+            <td><app-sprite dimmed x="0" y="32"></app-sprite></td>
+            <td><app-sprite dimmed x="0" y="46"></app-sprite></td>
+          </tr>
+
+          <tr>
+            <td><app-sprite dimmed x="0" y="1"></app-sprite></td>
+            <td><app-sprite legendary x="0" y="37"></app-sprite></td>
+            <td><app-sprite dimmed x="0" y="29"></app-sprite></td>
+          </tr>
+
+          <tr>
+            <td><app-sprite dimmed x="0" y="43"></app-sprite></td>
+            <td><app-sprite dimmed x="0" y="40"></app-sprite></td>
+            <td><app-sprite legendary x="0" y="45"></app-sprite></td>
+          </tr>
+        </table>
       </section>
     `;
   }
