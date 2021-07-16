@@ -1,9 +1,10 @@
 /* eslint-disable import/extensions */
-import { mkAlea } from '@spissvinkel/alea';
+import { AleaPRNG, mkAlea } from '@spissvinkel/alea';
 import { html, css, customElement, state } from 'lit-element';
 
 import config from '../config.js';
 import { fromBase62 } from '../helpers/base62';
+import { randomBaseWeapon } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
 
@@ -17,6 +18,7 @@ export interface Action {
 export class PageProgress extends PageElement {
   @state() session = '';
   @state() actions: Action[] = [];
+  @state() alea?: AleaPRNG;
 
   static styles = css`
     section {
@@ -31,6 +33,8 @@ export class PageProgress extends PageElement {
       return html`No session`;
     }
 
+    let wy = 1;
+
     if (session != this.session) {
       this.session = session;
       // TODO: Implement an async recreation of all events leading up to now
@@ -40,8 +44,12 @@ export class PageProgress extends PageElement {
       const t0 = fromBase62(this.session);
       console.log('t0', t0);
 
-      const { uint32 } = mkAlea(this.session);
+      this.alea = mkAlea(this.session);
+      const { uint32 } = this.alea;
       console.log('Session seeded first random: ', uint32());
+
+      const weapon = randomBaseWeapon(this.alea);
+      wy = weapon.rows[0];
     }
 
     return html`
@@ -56,7 +64,7 @@ export class PageProgress extends PageElement {
           </tr>
 
           <tr>
-            <td><app-sprite dimmed x="0" y="1"></app-sprite></td>
+            <td><app-sprite dimmed x="0" y=${wy}></app-sprite></td>
             <td><app-sprite legendary x="0" y="37"></app-sprite></td>
             <td><app-sprite dimmed x="0" y="29"></app-sprite></td>
           </tr>

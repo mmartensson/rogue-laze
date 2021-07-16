@@ -1,3 +1,5 @@
+import { AleaPRNG } from '@spissvinkel/alea';
+
 export const WeaponBaseRow = 0;
 
 export enum WeaponRow {
@@ -331,7 +333,7 @@ export const WeaponScythe: BaseWeapon = {
   weight: 10,
 };
 
-export const Weapons = [
+export const BaseWeapons = [
   WeaponDagger,
   WeaponSword1h,
   WeaponSword2h,
@@ -349,3 +351,8 @@ export const Weapons = [
   WeaponSlingshot,
   WeaponScythe,
 ];
+
+export const randomBaseWeapon = (alea: AleaPRNG): BaseWeapon => {
+  const { uint32 } = alea;
+  return BaseWeapons[uint32() % BaseWeapons.length];
+};
