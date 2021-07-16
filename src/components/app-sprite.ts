@@ -16,16 +16,29 @@ export class AppSprite extends LitElement {
       transform: scale(2);
       margin-right: ${SIZE}px;
       margin-bottom: ${SIZE}px;
-    }
-    :host([dimmed]) {
+
       border: inset 1px gray;
       background-color: lightgray;
-      opacity: 0.2;
-      filter: grayscale(100%);
     }
-    :host([legendary]) {
+    :host([rarity='legendary']) {
       border: inset 1px gold;
       background-color: goldenrod;
+    }
+    :host([rarity='epic']) {
+      border: inset 1px darkviolet;
+      background-color: purple;
+    }
+    :host([rarity='rare']) {
+      border: inset 1px darkblue;
+      background-color: blue;
+    }
+    :host([rarity='uncommon']) {
+      border: inset 1px darkgreen;
+      background-color: green;
+    }
+    :host([dimmed]) {
+      opacity: 0.2;
+      filter: grayscale(100%);
     }
   `;
 

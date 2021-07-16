@@ -356,3 +356,39 @@ export const randomBaseWeapon = (alea: AleaPRNG): BaseWeapon => {
   const { uint32 } = alea;
   return BaseWeapons[uint32() % BaseWeapons.length];
 };
+
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+export interface WeaponInstance extends BaseWeapon {
+  rarity: Rarity;
+}
+
+// FIXME: Move somewhere relevant
+const MAX_LEVEL = 100;
+
+export const randomRarity = (alea: AleaPRNG, playerLevel: number): Rarity => {
+  const { random } = alea;
+  const value = random() / Math.log(MAX_LEVEL - playerLevel + 1);
+
+  if (value > 0.9) return 'legendary';
+
+  if (value > 0.7) return 'epic';
+
+  if (value > 0.25) return 'rare';
+
+  if (value > 0.15) return 'uncommon';
+
+  return 'common';
+};
+
+export const randomWeapon = (
+  alea: AleaPRNG,
+  playerLevel: number
+): WeaponInstance => {
+  const rarity = randomRarity(alea, playerLevel);
+
+  return {
+    ...randomBaseWeapon(alea),
+    rarity,
+  };
+};

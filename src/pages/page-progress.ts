@@ -4,7 +4,7 @@ import { html, css, customElement, state } from 'lit-element';
 
 import config from '../config.js';
 import { fromBase62 } from '../helpers/base62';
-import { randomBaseWeapon } from '../helpers/equipment';
+import { randomWeapon } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
 
@@ -34,6 +34,7 @@ export class PageProgress extends PageElement {
     }
 
     let wy = 1;
+    let wr = 'common';
 
     if (session != this.session) {
       this.session = session;
@@ -45,11 +46,10 @@ export class PageProgress extends PageElement {
       console.log('t0', t0);
 
       this.alea = mkAlea(this.session);
-      const { uint32 } = this.alea;
-      console.log('Session seeded first random: ', uint32());
 
-      const weapon = randomBaseWeapon(this.alea);
+      const weapon = randomWeapon(this.alea, 40);
       wy = weapon.rows[0];
+      wr = weapon.rarity;
     }
 
     return html`
@@ -64,15 +64,15 @@ export class PageProgress extends PageElement {
           </tr>
 
           <tr>
-            <td><app-sprite dimmed x="0" y=${wy}></app-sprite></td>
-            <td><app-sprite legendary x="0" y="37"></app-sprite></td>
+            <td><app-sprite rarity=${wr} x="0" y=${wy}></app-sprite></td>
+            <td><app-sprite dimmed x="0" y="37"></app-sprite></td>
             <td><app-sprite dimmed x="0" y="29"></app-sprite></td>
           </tr>
 
           <tr>
             <td><app-sprite dimmed x="0" y="43"></app-sprite></td>
             <td><app-sprite dimmed x="0" y="40"></app-sprite></td>
-            <td><app-sprite legendary x="0" y="45"></app-sprite></td>
+            <td><app-sprite dimmed x="0" y="45"></app-sprite></td>
           </tr>
         </table>
       </section>
