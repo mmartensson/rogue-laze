@@ -1,5 +1,10 @@
 import { AleaPRNG } from '@spissvinkel/alea';
 
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+// FIXME: Move somewhere relevant
+const MAX_LEVEL = 100;
+
 export const WeaponBaseRow = 0;
 
 export enum WeaponRow {
@@ -69,7 +74,7 @@ export enum ArmorRow {
   Dress = ArmorBaseRow + 26,
 }
 
-export type EquipmentRow = WeaponRow | ArmorRow;
+export type ItemRow = WeaponRow | ArmorRow;
 
 export enum VariantColumn {
   Regular = 0,
@@ -93,6 +98,19 @@ export enum VariantColumn {
 }
 
 export type WeaponLocation = 'main-1h' | 'main-2h' | 'offhand' | 'either';
+
+export type ArmorLocation =
+  | 'accessory'
+  | 'head'
+  | 'neck'
+  | 'chest'
+  | 'arm'
+  | 'leg'
+  | 'finger'
+  | 'offhand';
+
+export type ItemLocation = WeaponLocation | ArmorLocation;
+
 export type DamageType =
   | 'acid'
   | 'bludgeoning'
@@ -117,21 +135,43 @@ export const DamageTypeToVariantColumn = new Map<DamageType, VariantColumn>([
   ['radiant', VariantColumn.Radiant],
 ]);
 
+export type DamageTypeMitigation = Partial<Record<DamageType, number>>;
+
 export type Speed = 'fast' | 'medium' | 'slow';
 
 export type Dice = 4 | 6 | 8 | 10 | 12 | 20 | 100;
 
-export interface BaseWeapon {
+export interface BaseItem {
   id: string;
   names: string[];
+  location: ItemLocation;
+  rows: ItemRow[];
+  price: number;
+  weight: number;
+}
+
+export interface ItemInstanceAdditions {
+  rarity: Rarity;
+  secondaryDamageType?: DamageType;
+}
+
+export interface BaseWeapon extends BaseItem {
   location: WeaponLocation;
   rows: WeaponRow[];
   damageType: DamageType;
   damageDice: Dice;
   speed: Speed;
-  price: number;
-  weight: number;
 }
+
+export interface WeaponInstance extends BaseWeapon, ItemInstanceAdditions {}
+
+export interface BaseArmor extends BaseItem {
+  location: ArmorLocation;
+  rows: ArmorRow[];
+  mitigation: DamageTypeMitigation;
+}
+
+export interface ArmorInstance extends BaseArmor, ItemInstanceAdditions {}
 
 export const WeaponDagger: BaseWeapon = {
   id: 'dagger',
@@ -357,15 +397,103 @@ export const randomBaseWeapon = (alea: AleaPRNG): BaseWeapon => {
   return BaseWeapons[uint32() % BaseWeapons.length];
 };
 
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+/*
+  Armor TODO:
 
-export interface WeaponInstance extends BaseWeapon {
-  rarity: Rarity;
-  secondaryDamageType?: DamageType;
-}
+  Hat
+  Helm1
+  Helm2
+  WizardHat
+  Circlet
+  Robe
+  Coat
 
-// FIXME: Move somewhere relevant
-const MAX_LEVEL = 100;
+  Cloak
+  Boots1
+  Boots2
+  Gloves
+  Gauntlets
+  Bracers
+  Ring
+  Necklace
+  Brooch
+  Comb
+
+  Bow
+  Headband
+  Goggles
+  Jacket1
+  Jacket2
+  Dress
+*/
+
+export const ArmorShield: BaseArmor = {
+  id: 'shield',
+  names: ['Shield'],
+  location: 'offhand',
+  rows: [ArmorRow.Shield],
+  mitigation: {
+    piercing: 2,
+    slashing: 2,
+    bludgeoning: 2,
+  },
+  price: 1000,
+  weight: 6,
+};
+
+export const ArmorBuckler: BaseArmor = {
+  id: 'shield',
+  names: ['Buckler'],
+  location: 'offhand',
+  rows: [ArmorRow.Shield],
+  mitigation: {
+    piercing: 1,
+    slashing: 1,
+    bludgeoning: 1,
+  },
+  price: 200,
+  weight: 3,
+};
+
+export const ArmorBreastplate: BaseArmor = {
+  id: 'breastplate',
+  names: ['Breastplate'],
+  location: 'chest',
+  rows: [ArmorRow.Breastplate],
+  mitigation: {
+    piercing: 4,
+    slashing: 4,
+    bludgeoning: 4,
+  },
+  price: 4000,
+  weight: 20,
+};
+
+export const ArmorPlate: BaseArmor = {
+  id: 'plate',
+  names: ['Plate'],
+  location: 'chest',
+  rows: [ArmorRow.Plate],
+  mitigation: {
+    piercing: 8,
+    slashing: 8,
+    bludgeoning: 8,
+  },
+  price: 15000,
+  weight: 65,
+};
+
+export const BaseArmors = [
+  ArmorShield,
+  ArmorBuckler,
+  ArmorBreastplate,
+  ArmorPlate,
+];
+
+export const randomBaseArmor = (alea: AleaPRNG): BaseArmor => {
+  const { uint32 } = alea;
+  return BaseArmors[uint32() % BaseArmors.length];
+};
 
 export const randomRarity = (alea: AleaPRNG, playerLevel: number): Rarity => {
   const { random } = alea;
@@ -423,5 +551,26 @@ export const randomWeapon = (
     ...randomBaseWeapon(alea),
     rarity,
     secondaryDamageType,
+  };
+};
+
+export const randomArmor = (
+  alea: AleaPRNG,
+  playerLevel: number
+): ArmorInstance => {
+  const baseArmor = randomBaseArmor(alea);
+  const rarity = randomRarity(alea, playerLevel);
+  const secondaryDamageType = randomSecondaryDamageType(alea, playerLevel);
+  const mitigation = { ...baseArmor.mitigation };
+
+  if (secondaryDamageType) {
+    mitigation[secondaryDamageType] = 2;
+  }
+
+  return {
+    ...baseArmor,
+    rarity,
+    secondaryDamageType,
+    mitigation,
   };
 };
