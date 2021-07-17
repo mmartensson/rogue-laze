@@ -6,6 +6,7 @@ import config from '../config.js';
 import { fromBase62 } from '../helpers/base62';
 import {
   DamageTypeToVariantColumn,
+  randomItem,
   randomWeapon,
   VariantColumn,
 } from '../helpers/equipment';
@@ -62,6 +63,12 @@ export class PageProgress extends PageElement {
       wr = weapon.rarity;
     }
 
+    const example = (level: number) => {
+      if (!this.alea) return;
+      (this.shadowRoot?.querySelector('#example') as HTMLPreElement).innerHTML =
+        JSON.stringify(randomItem(this.alea, level), null, 2);
+    };
+
     return html`
       <section>
         <h1>Progress</h1>
@@ -85,6 +92,16 @@ export class PageProgress extends PageElement {
             <td><app-sprite dimmed x="0" y="45"></app-sprite></td>
           </tr>
         </table>
+
+        <button @click=${() => example(1)}>1</button>
+        <button @click=${() => example(10)}>10</button>
+        <button @click=${() => example(20)}>20</button>
+        <button @click=${() => example(30)}>30</button>
+        <button @click=${() => example(50)}>50</button>
+        <button @click=${() => example(70)}>70</button>
+        <button @click=${() => example(90)}>90</button>
+        <button @click=${() => example(100)}>100</button>
+        <pre id="example"></pre>
       </section>
     `;
   }

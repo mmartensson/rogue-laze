@@ -173,6 +173,8 @@ export interface BaseArmor extends BaseItem {
 
 export interface ArmorInstance extends BaseArmor, ItemInstanceAdditions {}
 
+export type ItemInstance = WeaponInstance | ArmorInstance;
+
 export const WeaponDagger: BaseWeapon = {
   id: 'dagger',
   names: ['Dagger', 'Knife', 'Shiv'],
@@ -500,13 +502,15 @@ export const randomRarity = (alea: AleaPRNG, playerLevel: number): Rarity => {
   const raw = random();
   const adjusted = raw / Math.log10(MAX_LEVEL - playerLevel + 1);
 
+  console.log('Rarity', raw, adjusted);
+
   if (adjusted > 0.9) return 'legendary';
 
-  if (adjusted > 0.7) return 'epic';
+  if (adjusted > 0.6) return 'epic';
 
-  if (adjusted > 0.25) return 'rare';
+  if (adjusted > 0.4) return 'rare';
 
-  if (adjusted > 0.15) return 'uncommon';
+  if (adjusted > 0.35) return 'uncommon';
 
   return 'common';
 };
@@ -573,4 +577,13 @@ export const randomArmor = (
     secondaryDamageType,
     mitigation,
   };
+};
+
+export const randomItem = (
+  alea: AleaPRNG,
+  playerLevel: number
+): ItemInstance => {
+  const { random } = alea;
+  if (random() > 0.5) return randomWeapon(alea, playerLevel);
+  else return randomArmor(alea, playerLevel);
 };
