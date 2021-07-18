@@ -1,5 +1,4 @@
 /* eslint-disable import/extensions */
-import { AleaPRNG, mkAlea } from '@spissvinkel/alea';
 import { html, css, customElement, state } from 'lit-element';
 
 import config from '../config.js';
@@ -12,6 +11,7 @@ import {
 } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
+import { PRNG } from '../helpers/prng';
 
 export type ActionType = 'battle';
 
@@ -23,7 +23,7 @@ export interface Action {
 export class PageProgress extends PageElement {
   @state() session = '';
   @state() actions: Action[] = [];
-  @state() alea?: AleaPRNG;
+  @state() prng?: PRNG;
 
   static styles = css`
     section {
@@ -51,10 +51,10 @@ export class PageProgress extends PageElement {
       const t0 = fromBase62(this.session);
       console.log('t0', t0);
 
-      this.alea = mkAlea(this.session);
+      this.prng = new PRNG(this.session);
 
-      const weapon = randomWeapon(this.alea, 80);
-      wy = weapon.rows[0];
+      const weapon = randomWeapon(this.prng, 80);
+      wy = weapon.row;
       wx = (
         weapon.secondaryDamageType
           ? DamageTypeToVariantColumn.get(weapon.secondaryDamageType)
@@ -64,9 +64,9 @@ export class PageProgress extends PageElement {
     }
 
     const example = (level: number) => {
-      if (!this.alea) return;
+      if (!this.prng) return;
       (this.shadowRoot?.querySelector('#example') as HTMLPreElement).innerHTML =
-        JSON.stringify(randomItem(this.alea, level), null, 2);
+        JSON.stringify(randomItem(this.prng, level), null, 2);
     };
 
     return html`

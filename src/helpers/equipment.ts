@@ -1,4 +1,5 @@
-import { AleaPRNG } from '@spissvinkel/alea';
+/* eslint-disable import/extensions */
+import { PRNG } from './prng';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
@@ -152,7 +153,7 @@ export interface BaseItem {
 
 export interface ItemInstanceAdditions {
   name: string;
-  // FIXME: Figure out how best to not have names (plural) in instances
+  row: ItemRow;
   rarity: Rarity;
   secondaryDamageType?: DamageType;
 }
@@ -165,7 +166,11 @@ export interface BaseWeapon extends BaseItem {
   speed: Speed;
 }
 
-export interface WeaponInstance extends BaseWeapon, ItemInstanceAdditions {}
+export interface WeaponInstance
+  extends Omit<BaseWeapon, 'names' | 'rows'>,
+    ItemInstanceAdditions {
+  row: WeaponRow;
+}
 
 export interface BaseArmor extends BaseItem {
   location: ArmorLocation;
@@ -173,7 +178,11 @@ export interface BaseArmor extends BaseItem {
   mitigation: DamageTypeMitigation;
 }
 
-export interface ArmorInstance extends BaseArmor, ItemInstanceAdditions {}
+export interface ArmorInstance
+  extends Omit<BaseArmor, 'names' | 'rows'>,
+    ItemInstanceAdditions {
+  row: ArmorRow;
+}
 
 export type ItemInstance = WeaponInstance | ArmorInstance;
 
@@ -396,11 +405,6 @@ export const BaseWeapons = [
   WeaponScythe,
 ];
 
-export const randomBaseWeapon = (alea: AleaPRNG): BaseWeapon => {
-  const { uint32 } = alea;
-  return BaseWeapons[uint32() % BaseWeapons.length];
-};
-
 /*
   Armor TODO:
 
@@ -494,11 +498,6 @@ export const BaseArmors = [
   ArmorPlate,
 ];
 
-export const randomBaseArmor = (alea: AleaPRNG): BaseArmor => {
-  const { uint32 } = alea;
-  return BaseArmors[uint32() % BaseArmors.length];
-};
-
 export const RarityPrefixes: Record<Rarity, string[]> = {
   common: [
     'Dirty',
@@ -548,14 +547,12 @@ export const RarityPrefixes: Record<Rarity, string[]> = {
   ],
 };
 
-export const randomRarityPrefix = (alea: AleaPRNG, rarity: Rarity): string => {
-  const { uint32 } = alea;
-  return RarityPrefixes[rarity][uint32() % RarityPrefixes[rarity].length];
+export const randomRarityPrefix = (prng: PRNG, rarity: Rarity): string => {
+  return prng.pick(RarityPrefixes[rarity]);
 };
 
-export const randomRarity = (alea: AleaPRNG, playerLevel: number): Rarity => {
-  const { random } = alea;
-  const raw = random();
+export const randomRarity = (prng: PRNG, playerLevel: number): Rarity => {
+  const raw = prng.fraction();
   const adjusted = raw / Math.log10(MAX_LEVEL - playerLevel + 1);
 
   console.log('Rarity', raw, adjusted);
@@ -572,16 +569,15 @@ export const randomRarity = (alea: AleaPRNG, playerLevel: number): Rarity => {
 };
 
 export const randomSecondaryDamageType = (
-  alea: AleaPRNG,
+  prng: PRNG,
   playerLevel: number
 ): DamageType | undefined => {
-  const { random } = alea;
-  const raw = random();
+  const raw = prng.fraction();
   const adjusted = raw / Math.log10(MAX_LEVEL - playerLevel + 1);
 
   if (adjusted < 0.8) return undefined;
 
-  const value = random();
+  const value = prng.fraction();
 
   if (value > 0.9) return 'acid';
 
@@ -601,14 +597,15 @@ export const randomSecondaryDamageType = (
 };
 
 export const randomWeapon = (
-  alea: AleaPRNG,
+  prng: PRNG,
   playerLevel: number
 ): WeaponInstance => {
-  const baseWeapon = randomBaseWeapon(alea);
-  const rarity = randomRarity(alea, playerLevel);
-  const secondaryDamageType = randomSecondaryDamageType(alea, playerLevel);
+  const baseWeapon = prng.pick(BaseWeapons);
+  const rarity = randomRarity(prng, playerLevel);
+  const secondaryDamageType = randomSecondaryDamageType(prng, playerLevel);
   let price = baseWeapon.price;
-  let name = baseWeapon.names[alea.uint32() % baseWeapon.names.length];
+  const row = prng.pick(baseWeapon.rows);
+  let name = prng.pick(baseWeapon.names);
 
   switch (rarity) {
     case 'uncommon':
@@ -625,47 +622,43 @@ export const randomWeapon = (
       break;
   }
 
-  name = randomRarityPrefix(alea, rarity) + ' ' + name;
+  name = randomRarityPrefix(prng, rarity) + ' ' + name;
 
   return {
     ...baseWeapon,
     name,
+    row,
     rarity,
     price,
     secondaryDamageType,
   };
 };
 
-export const randomArmor = (
-  alea: AleaPRNG,
-  playerLevel: number
-): ArmorInstance => {
-  const baseArmor = randomBaseArmor(alea);
-  const rarity = randomRarity(alea, playerLevel);
-  const secondaryDamageType = randomSecondaryDamageType(alea, playerLevel);
+export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
+  const baseArmor = prng.pick(BaseArmors);
+  const rarity = randomRarity(prng, playerLevel);
+  const secondaryDamageType = randomSecondaryDamageType(prng, playerLevel);
   const mitigation = { ...baseArmor.mitigation };
-  let name = baseArmor.names[alea.uint32() % baseArmor.names.length];
+  const row = prng.pick(baseArmor.rows);
+  let name = prng.pick(baseArmor.names);
 
   if (secondaryDamageType) {
     mitigation[secondaryDamageType] = 2;
   }
 
-  name = randomRarityPrefix(alea, rarity) + ' ' + name;
+  name = randomRarityPrefix(prng, rarity) + ' ' + name;
 
   return {
     ...baseArmor,
     name,
+    row,
     rarity,
     secondaryDamageType,
     mitigation,
   };
 };
 
-export const randomItem = (
-  alea: AleaPRNG,
-  playerLevel: number
-): ItemInstance => {
-  const { random } = alea;
-  if (random() > 0.5) return randomWeapon(alea, playerLevel);
-  else return randomArmor(alea, playerLevel);
+export const randomItem = (prng: PRNG, playerLevel: number): ItemInstance => {
+  if (prng.fraction() > 0.5) return randomWeapon(prng, playerLevel);
+  else return randomArmor(prng, playerLevel);
 };
