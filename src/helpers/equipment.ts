@@ -151,6 +151,8 @@ export interface BaseItem {
 }
 
 export interface ItemInstanceAdditions {
+  name: string;
+  // FIXME: Figure out how best to not have names (plural) in instances
   rarity: Rarity;
   secondaryDamageType?: DamageType;
 }
@@ -497,6 +499,60 @@ export const randomBaseArmor = (alea: AleaPRNG): BaseArmor => {
   return BaseArmors[uint32() % BaseArmors.length];
 };
 
+export const RarityPrefixes: Record<Rarity, string[]> = {
+  common: [
+    'Dirty',
+    'Misshapen',
+    'Smelly',
+    'Poor',
+    'Blemished',
+    'Distorted',
+    'Marred',
+  ],
+  uncommon: [
+    'Adequate',
+    'Passable',
+    'Moderate',
+    'Unexceptional',
+    'Unremarkable',
+    'Average',
+    'Proper',
+  ],
+  rare: [
+    'Mastercraft',
+    'Pristine',
+    'Extravagant',
+    'Remarkable',
+    'Ornate',
+    'Garish',
+    'Fancy',
+    'Premium',
+  ],
+  epic: [
+    'Incredible',
+    'Amazing',
+    'Impressive',
+    'Fabulous',
+    'Marvelous',
+    'Phenomenal',
+    'Spectacular',
+    'Superb',
+    'Breathtaking',
+  ],
+  legendary: [
+    'Legendary',
+    'Godlike',
+    'Mythical',
+    'Unbelievable',
+    'Inconceivable',
+  ],
+};
+
+export const randomRarityPrefix = (alea: AleaPRNG, rarity: Rarity): string => {
+  const { uint32 } = alea;
+  return RarityPrefixes[rarity][uint32() % RarityPrefixes[rarity].length];
+};
+
 export const randomRarity = (alea: AleaPRNG, playerLevel: number): Rarity => {
   const { random } = alea;
   const raw = random();
@@ -548,12 +604,34 @@ export const randomWeapon = (
   alea: AleaPRNG,
   playerLevel: number
 ): WeaponInstance => {
+  const baseWeapon = randomBaseWeapon(alea);
   const rarity = randomRarity(alea, playerLevel);
   const secondaryDamageType = randomSecondaryDamageType(alea, playerLevel);
+  let price = baseWeapon.price;
+  let name = baseWeapon.names[alea.uint32() % baseWeapon.names.length];
+
+  switch (rarity) {
+    case 'uncommon':
+      price *= 10;
+      break;
+    case 'rare':
+      price *= 100;
+      break;
+    case 'epic':
+      price *= 1000;
+      break;
+    case 'legendary':
+      price *= 10000;
+      break;
+  }
+
+  name = randomRarityPrefix(alea, rarity) + ' ' + name;
 
   return {
-    ...randomBaseWeapon(alea),
+    ...baseWeapon,
+    name,
     rarity,
+    price,
     secondaryDamageType,
   };
 };
@@ -566,13 +644,17 @@ export const randomArmor = (
   const rarity = randomRarity(alea, playerLevel);
   const secondaryDamageType = randomSecondaryDamageType(alea, playerLevel);
   const mitigation = { ...baseArmor.mitigation };
+  let name = baseArmor.names[alea.uint32() % baseArmor.names.length];
 
   if (secondaryDamageType) {
     mitigation[secondaryDamageType] = 2;
   }
 
+  name = randomRarityPrefix(alea, rarity) + ' ' + name;
+
   return {
     ...baseArmor,
+    name,
     rarity,
     secondaryDamageType,
     mitigation,
