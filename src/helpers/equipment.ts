@@ -500,6 +500,27 @@ export const BaseArmors = [
   ArmorPlate,
 ];
 
+export const DamageTypePrefixes: Record<DamageType, string[]> = {
+  acid: ['Gooey', 'Corroding', 'Erosive', 'Biting'],
+  bludgeoning: ['Blunt'],
+  cold: ['Stinging', 'Boreal', 'Arctic', 'Icy', 'Numbing'],
+  fire: ['Blazing', 'Infernal', 'Devouring', 'Charring', 'Flaming'],
+  force: ['Forceful', 'Furious'],
+  lightning: ['Voltaic', 'Striking'],
+  necrotic: ['Necrotic', 'Pestilent', 'Malignant'],
+  piercing: ['Pointy'],
+  poison: ['Noxious', 'Toxic', 'Viperous'],
+  radiant: ['Angelic', 'Lustrous', 'Brilliant', 'Glittering'],
+  slashing: ['Sharp'],
+};
+
+export const randomDamageTypePrefix = (
+  prng: PRNG,
+  damageType: DamageType
+): string => {
+  return prng.pick(DamageTypePrefixes[damageType]);
+};
+
 export const RarityPrefixes: Record<Rarity, string[]> = {
   common: [
     'Dirty',
@@ -655,11 +676,20 @@ export const randomWeapon = (
   const baseWeapon = prng.pick(BaseWeapons);
   const { rows, location, speed, damageDice } = baseWeapon;
   const commons = randomItemInstanceCommons(prng, playerLevel, baseWeapon);
+  const { secondaryDamageType } = commons;
+  let { name } = commons;
+
+  // TODO: Improve damage based on rarity
 
   const row = prng.pick(rows);
 
+  if (secondaryDamageType) {
+    name = randomDamageTypePrefix(prng, secondaryDamageType) + ' ' + name;
+  }
+
   return {
     ...commons,
+    name,
     location,
     row,
     speed,
@@ -675,12 +705,32 @@ export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
   const { rows, location } = baseArmor;
   const mitigation = clone(baseArmor.mitigation);
   const commons = randomItemInstanceCommons(prng, playerLevel, baseArmor);
-  const { secondaryDamageType } = commons;
+  const { secondaryDamageType, rarity } = commons;
 
   const row = prng.pick(rows);
 
   if (secondaryDamageType) {
     mitigation[secondaryDamageType] = 2;
+  }
+
+  let extraMitigation = 0;
+  switch (rarity) {
+    case 'uncommon':
+      extraMitigation += 1;
+      break;
+    case 'rare':
+      extraMitigation += 2;
+      break;
+    case 'epic':
+      extraMitigation += 3;
+      break;
+    case 'legendary':
+      extraMitigation += 5;
+      break;
+  }
+
+  for (const [key, value] of Object.entries(mitigation)) {
+    mitigation[key as DamageType] = value + extraMitigation;
   }
 
   return {
