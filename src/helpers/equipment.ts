@@ -151,11 +151,12 @@ export interface BaseItem {
   weight: number;
 }
 
-export interface ItemInstanceAdditions {
+export interface ItemInstanceBase {
   name: string;
-  row: ItemRow;
   rarity: Rarity;
   secondaryDamageType?: DamageType;
+  price: number;
+  weight: number;
 }
 
 export interface BaseWeapon extends BaseItem {
@@ -166,10 +167,11 @@ export interface BaseWeapon extends BaseItem {
   speed: Speed;
 }
 
-export interface WeaponInstance
-  extends Omit<BaseWeapon, 'names' | 'rows'>,
-    ItemInstanceAdditions {
+export interface WeaponInstance extends ItemInstanceBase {
   row: WeaponRow;
+  location: WeaponLocation;
+  damageDice: Dice;
+  speed: Speed;
 }
 
 export interface BaseArmor extends BaseItem {
@@ -178,10 +180,10 @@ export interface BaseArmor extends BaseItem {
   mitigation: DamageTypeMitigation;
 }
 
-export interface ArmorInstance
-  extends Omit<BaseArmor, 'names' | 'rows'>,
-    ItemInstanceAdditions {
+export interface ArmorInstance extends ItemInstanceBase {
   row: ArmorRow;
+  location: ArmorLocation;
+  mitigation: DamageTypeMitigation;
 }
 
 export type ItemInstance = WeaponInstance | ArmorInstance;
@@ -596,16 +598,29 @@ export const randomSecondaryDamageType = (
   return 'poison';
 };
 
-export const randomWeapon = (
+export const randomItemInstanceCommons = (
   prng: PRNG,
-  playerLevel: number
-): WeaponInstance => {
-  const baseWeapon = prng.pick(BaseWeapons);
+  playerLevel: number,
+  baseItem: BaseItem
+): ItemInstanceBase => {
   const rarity = randomRarity(prng, playerLevel);
-  const secondaryDamageType = randomSecondaryDamageType(prng, playerLevel);
-  let price = baseWeapon.price;
-  const row = prng.pick(baseWeapon.rows);
-  let name = prng.pick(baseWeapon.names);
+  const secondaryDamageType =
+    rarity === 'common'
+      ? undefined
+      : randomSecondaryDamageType(prng, playerLevel);
+  let name = prng.pick(baseItem.names);
+
+  let price = baseItem.price;
+  let weight = baseItem.weight;
+
+  const weightCheck = prng.fraction();
+  if (weightCheck > 0.9) {
+    weight = Math.floor(weight * 0.8);
+    name = 'Light ' + name;
+  } else if (weightCheck > 0.8) {
+    weight = Math.floor(weight * 0.8);
+    name = 'Heavy ' + name;
+  }
 
   switch (rarity) {
     case 'uncommon':
@@ -625,35 +640,53 @@ export const randomWeapon = (
   name = randomRarityPrefix(prng, rarity) + ' ' + name;
 
   return {
-    ...baseWeapon,
     name,
-    row,
     rarity,
-    price,
     secondaryDamageType,
+    price,
+    weight,
   };
 };
 
+export const randomWeapon = (
+  prng: PRNG,
+  playerLevel: number
+): WeaponInstance => {
+  const baseWeapon = prng.pick(BaseWeapons);
+  const { rows, location, speed, damageDice } = baseWeapon;
+  const commons = randomItemInstanceCommons(prng, playerLevel, baseWeapon);
+
+  const row = prng.pick(rows);
+
+  return {
+    ...commons,
+    location,
+    row,
+    speed,
+    damageDice,
+  };
+};
+
+// FIXME: Move to a nice spot
+export const clone = <T>(src: T): T => JSON.parse(JSON.stringify(src));
+
 export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
   const baseArmor = prng.pick(BaseArmors);
-  const rarity = randomRarity(prng, playerLevel);
-  const secondaryDamageType = randomSecondaryDamageType(prng, playerLevel);
-  const mitigation = { ...baseArmor.mitigation };
-  const row = prng.pick(baseArmor.rows);
-  let name = prng.pick(baseArmor.names);
+  const { rows, location } = baseArmor;
+  const mitigation = clone(baseArmor.mitigation);
+  const commons = randomItemInstanceCommons(prng, playerLevel, baseArmor);
+  const { secondaryDamageType } = commons;
+
+  const row = prng.pick(rows);
 
   if (secondaryDamageType) {
     mitigation[secondaryDamageType] = 2;
   }
 
-  name = randomRarityPrefix(prng, rarity) + ' ' + name;
-
   return {
-    ...baseArmor,
-    name,
+    ...commons,
+    location,
     row,
-    rarity,
-    secondaryDamageType,
     mitigation,
   };
 };
