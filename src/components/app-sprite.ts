@@ -19,6 +19,7 @@ export class AppSprite extends LitElement {
       border: inset 1px gray;
       background-color: lightgray;
       background-size: ${ROWS * 100}% ${COLUMNS * 100}%;
+      opacity: 0.8;
     }
     :host([rarity='legendary']) {
       border: inset 1px gold;
