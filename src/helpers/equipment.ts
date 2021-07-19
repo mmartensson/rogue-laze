@@ -110,7 +110,7 @@ export type ArmorLocation =
   | 'finger'
   | 'offhand';
 
-export type ItemLocation = WeaponLocation | ArmorLocation;
+export type ItemLocation = ArmorLocation | 'main' | 'offhand';
 
 export type DamageType =
   | 'acid'
@@ -145,13 +145,13 @@ export type Dice = 4 | 6 | 8 | 10 | 12 | 20 | 100;
 export interface BaseItem {
   id: string;
   names: string[];
-  location: ItemLocation;
   rows: ItemRow[];
   price: number;
   weight: number;
 }
 
 export interface ItemInstanceBase {
+  refId: string;
   name: string;
   rarity: Rarity;
   secondaryDamageType?: DamageType;
@@ -167,9 +167,14 @@ export interface BaseWeapon extends BaseItem {
   speed: Speed;
 }
 
+// IN PROGRESS: refId for lookup of BaseWeapon to find location ... see that it is 'either'
+// (or whatever) and then assign the instance to a slot rather than declare it in the object itself.
+// Three separate lists:
+// 1) Weapon slot reuirements 2) Armor slot requirements 3) All available slots.
+// The code that assigns items to slots needs to figure out that putting a 2h weapon in main means that offhand
+// is blocked. Typically that is shown as a dimmed main weapon in offhand (instead of dimmed shield).
 export interface WeaponInstance extends ItemInstanceBase {
   row: WeaponRow;
-  location: WeaponLocation;
   damageDice: Dice;
   speed: Speed;
 }
@@ -182,7 +187,6 @@ export interface BaseArmor extends BaseItem {
 
 export interface ArmorInstance extends ItemInstanceBase {
   row: ArmorRow;
-  location: ArmorLocation;
   mitigation: DamageTypeMitigation;
 }
 
@@ -570,6 +574,11 @@ export const RarityPrefixes: Record<Rarity, string[]> = {
   ],
 };
 
+export const BaseItemLookup: Record<string, BaseItem> = {};
+[...BaseArmors, ...BaseWeapons].forEach(
+  (item) => (BaseItemLookup[item.id] = item)
+);
+
 export const randomRarityPrefix = (prng: PRNG, rarity: Rarity): string => {
   return prng.pick(RarityPrefixes[rarity]);
 };
@@ -631,6 +640,8 @@ export const randomItemInstanceCommons = (
       : randomSecondaryDamageType(prng, playerLevel);
   let name = prng.pick(baseItem.names);
 
+  const refId = baseItem.id;
+
   let price = baseItem.price;
   let weight = baseItem.weight;
 
@@ -661,6 +672,7 @@ export const randomItemInstanceCommons = (
   name = randomRarityPrefix(prng, rarity) + ' ' + name;
 
   return {
+    refId,
     name,
     rarity,
     secondaryDamageType,
@@ -674,7 +686,7 @@ export const randomWeapon = (
   playerLevel: number
 ): WeaponInstance => {
   const baseWeapon = prng.pick(BaseWeapons);
-  const { rows, location, speed, damageDice } = baseWeapon;
+  const { rows, speed, damageDice } = baseWeapon;
   const commons = randomItemInstanceCommons(prng, playerLevel, baseWeapon);
   const { secondaryDamageType } = commons;
   let { name } = commons;
@@ -690,7 +702,6 @@ export const randomWeapon = (
   return {
     ...commons,
     name,
-    location,
     row,
     speed,
     damageDice,
@@ -702,7 +713,7 @@ export const clone = <T>(src: T): T => JSON.parse(JSON.stringify(src));
 
 export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
   const baseArmor = prng.pick(BaseArmors);
-  const { rows, location } = baseArmor;
+  const { rows } = baseArmor;
   const mitigation = clone(baseArmor.mitigation);
   const commons = randomItemInstanceCommons(prng, playerLevel, baseArmor);
   const { secondaryDamageType, rarity } = commons;
@@ -735,7 +746,6 @@ export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
 
   return {
     ...commons,
-    location,
     row,
     mitigation,
   };

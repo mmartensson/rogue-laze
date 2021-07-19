@@ -84,7 +84,7 @@ export class ItemMannequin extends LitElement {
         ${at(50, 50, 2, 49, 'accessory')}
         ${at(163, 0, 0, 32, 'head')}
         ${at(275, 50, 2, 46, 'neck')}
-        ${at(0, 455, 1, 0, 'main-1h')}
+        ${at(0, 455, 1, 0, 'main')}
         ${at(163, 255, 0, 37, 'chest')}
         ${at(328, 455, 0, 29, 'offhand')}
         ${at(0, 355, 0, 43, 'arm')}
