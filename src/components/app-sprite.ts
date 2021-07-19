@@ -1,6 +1,8 @@
 import { LitElement, html, css, customElement, property } from 'lit-element';
 
-export const SIZE = 32;
+export const ROWS = 17;
+export const COLUMNS = 55;
+export const SPRITE_SIDE = 32;
 
 @customElement('app-sprite')
 export class AppSprite extends LitElement {
@@ -10,15 +12,13 @@ export class AppSprite extends LitElement {
   static styles = css`
     :host {
       display: block;
-      width: ${SIZE}px;
-      height: ${SIZE}px;
+      min-width: ${SPRITE_SIDE}px;
+      min-height: ${SPRITE_SIDE}px;
       background-image: url(../images/sprites.png);
-      transform: scale(2);
-      margin-right: ${SIZE}px;
-      margin-bottom: ${SIZE}px;
 
       border: inset 1px gray;
       background-color: lightgray;
+      background-size: ${ROWS * 100}% ${COLUMNS * 100}%;
     }
     :host([rarity='legendary']) {
       border: inset 1px gold;
@@ -43,9 +43,8 @@ export class AppSprite extends LitElement {
   `;
 
   render() {
-    const [ix, iy] = [this.x * SIZE, this.y * SIZE];
     this.updateComplete.then(() => {
-      this.style.backgroundPosition = `top -${iy}px left -${ix}px`;
+      this.style.backgroundPosition = `-${this.x * 100}% -${this.y * 100}%`;
     });
     return html``;
   }

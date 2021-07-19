@@ -11,6 +11,7 @@ import {
 } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
+import '../components/item-mannequin';
 import { PRNG } from '../helpers/prng';
 
 export type ActionType = 'battle';
@@ -102,6 +103,10 @@ export class PageProgress extends PageElement {
         <button @click=${() => example(90)}>90</button>
         <button @click=${() => example(100)}>100</button>
         <pre id="example"></pre>
+
+        <div style="padding-bottom: 100px"></div>
+
+        <item-mannequin></item-mannequin>
       </section>
     `;
   }
