@@ -3,16 +3,15 @@ import { html, css, customElement, state } from 'lit-element';
 
 import config from '../config.js';
 import { fromBase62 } from '../helpers/base62';
-import {
-  DamageTypeToVariantColumn,
-  randomItem,
-  randomWeapon,
-  VariantColumn,
-} from '../helpers/equipment';
+import { randomItem, randomWeapon } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
 import '../components/item-mannequin';
 import { PRNG } from '../helpers/prng';
+import {
+  DamageTypeToVariantColumn,
+  VariantColumn,
+} from '../types/equipment.js';
 
 export type ActionType = 'battle';
 

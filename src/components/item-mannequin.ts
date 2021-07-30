@@ -1,7 +1,7 @@
 /* eslint-disable import/extensions */
 import { LitElement, css, customElement, property, svg } from 'lit-element';
 
-import { ItemInstance, ItemLocation } from '../helpers/equipment';
+import { ItemInstance, ItemLocation } from '../types/equipment';
 
 export const SIZE = 32;
 
@@ -93,7 +93,7 @@ export class ItemMannequin extends LitElement {
 
         <foreignObject x=163 y=400 width="100" height="100">
           <div>Waist of space (pun intended)</div>
-          <!-- FIXME: Need belts etc -->
+          <!-- FIXME: Need belts etc. Apparently none in the icon set. -->
         </foreignObject>
 
 
