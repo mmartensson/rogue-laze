@@ -1,16 +1,18 @@
 /* eslint-disable import/extensions */
 import { LitElement, css, customElement, property, svg } from 'lit-element';
 
-import { ItemInstance, ItemLocation } from '../types/equipment';
+import { Character } from '../types/character';
+import {
+  DamageTypeToVariantColumn,
+  ItemInstance,
+  ItemLocation,
+} from '../types/equipment';
 
 export const SIZE = 32;
 
 @customElement('item-mannequin')
 export class ItemMannequin extends LitElement {
-  // FIXME: Should probably be a Record<ItemLocation, ItemInstance>. But then we need to remove the ambigious `either` etc.
-  // The `main-1h` is odd anyway for use with the `at()` function. Also, `finger` might be a bad name if we choose to allow
-  // bracelets.
-  @property({ attribute: false }) items: ItemInstance[] = [];
+  @property({ attribute: false }) character: Character | undefined;
 
   static styles = css`
     :host {
@@ -24,6 +26,10 @@ export class ItemMannequin extends LitElement {
   `;
 
   render() {
+    if (!this.character) return undefined;
+
+    const { character } = this;
+
     const at = (
       x: number,
       y: number,
@@ -31,7 +37,25 @@ export class ItemMannequin extends LitElement {
       dy: number,
       loc: ItemLocation
     ) => {
-      // TODO: Lookup `loc` among existing icond, dimming and using defaults (dx/dy) if not there
+      const item = this.character?.equipment[loc];
+      if (item) {
+        // FIXME: Going to be a lot of logic here that should be moved into the app-sprite itself, or be
+        // handled by a helper function.
+        const iy = item.row;
+        let ix = 0;
+        if (item.secondaryDamageType) {
+          ix = DamageTypeToVariantColumn.get(
+            item.secondaryDamageType
+          ) as number;
+        }
+
+        return svg`
+          <foreignObject x=${x} y=${y} width="100" height="100">
+            <app-sprite x=${ix} y=${iy} rarity=${item.rarity}></app-sprite>
+          </foreignobject>
+        `;
+      }
+
       return svg`
         <foreignObject x=${x} y=${y} width="100" height="100">
           <app-sprite dimmed x=${dx} y=${dy}></app-sprite>
@@ -39,13 +63,9 @@ export class ItemMannequin extends LitElement {
       `;
     };
 
-    // TODO: Something like:
-    // const curHealth = 300;
-    // const maxHealth = 400;
-    // const percent = Math.round((100*curHealth)/maxHealth);
-    // ... meaning we need more info here. The full character probably.
-
-    const percent = 75;
+    const percent = Math.round(
+      (100 * character.curHealth) / character.maxHealth
+    );
 
     return svg`
       <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 428 980">

@@ -4,6 +4,9 @@ import { ItemInstance, ItemLocation } from './equipment';
 export const MAX_LEVEL = 100;
 
 export interface Character {
-  equipment: Record<ItemLocation, ItemInstance>;
+  equipment: Partial<Record<ItemLocation, ItemInstance>>;
   inventory: ItemInstance[];
+  maxHealth: number;
+  curHealth: number;
+  level: number;
 }

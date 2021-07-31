@@ -13,6 +13,7 @@ import {
   RarityPrefixes,
   WeaponInstance,
 } from '../types/equipment';
+import { clone } from './html-meta-manager/utils';
 import { PRNG } from './prng';
 
 export const randomDamageTypePrefix = (
@@ -155,9 +156,6 @@ export const randomWeapon = (
     damageDice,
   };
 };
-
-// FIXME: Move to a nice spot
-export const clone = <T>(src: T): T => JSON.parse(JSON.stringify(src));
 
 export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
   const baseArmor = prng.pick(BaseArmors);

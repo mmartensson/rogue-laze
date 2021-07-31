@@ -8,6 +8,7 @@ import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
 import '../components/item-mannequin';
 import { PRNG } from '../helpers/prng';
+import { Character } from '../types/character.js';
 import {
   DamageTypeToVariantColumn,
   VariantColumn,
@@ -24,6 +25,7 @@ export class PageProgress extends PageElement {
   @state() session = '';
   @state() actions: Action[] = [];
   @state() prng?: PRNG;
+  @state() character?: Character;
 
   static styles = css`
     section {
@@ -69,6 +71,18 @@ export class PageProgress extends PageElement {
         JSON.stringify(randomItem(this.prng, level), null, 2);
     };
 
+    // FIXME: Clearly this should be handled elsewhere; also narrowing for types undefined at start should be figured out
+    if (!this.prng) return undefined;
+    this.character = {
+      equipment: {
+        main: randomWeapon(this.prng, 80),
+      },
+      inventory: [],
+      maxHealth: 100,
+      curHealth: 80,
+      level: 30,
+    };
+
     return html`
       <section>
         <h1>Progress</h1>
@@ -105,7 +119,7 @@ export class PageProgress extends PageElement {
 
         <div style="padding-bottom: 100px"></div>
 
-        <item-mannequin></item-mannequin>
+        <item-mannequin .character=${this.character}></item-mannequin>
       </section>
     `;
   }

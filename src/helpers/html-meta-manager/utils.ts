@@ -1,9 +1,4 @@
-/**
- * Copyright (c) IBM, Corp. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+// FIXME: Remove the meta tag logic; perfectly fine to have everything static and obvious in the index.html
 
 export const setMetaTag = (
   attributeName: string,
@@ -47,3 +42,6 @@ export const setLinkTag = (rel: string, href: string) => {
 
   element.setAttribute('href', href);
 };
+
+// Naive clone implementation
+export const clone = <T>(src: T): T => JSON.parse(JSON.stringify(src));
