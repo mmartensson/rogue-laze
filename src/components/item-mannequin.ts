@@ -37,7 +37,8 @@ export class ItemMannequin extends LitElement {
       const item = this.character?.equipment[loc];
       if (item) {
         // FIXME: Going to be a lot of logic here that should be moved into the app-sprite itself, or be
-        // handled by a helper function.
+        // handled by a helper function. Probably the app-sprite since we want to have a tooltip with
+        // name and stats, meaning the app-sprite needs the instance (and lookup its base). "rl-item"?
         const iy = item.row;
         let ix = 0;
         if (item.secondaryDamageType) {

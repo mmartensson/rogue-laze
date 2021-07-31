@@ -2,6 +2,8 @@
 // maybe some constants.ts-ish place later on.
 export const MAX_LEVEL = 100;
 
+// FIXME: Break weapon and armor instances out into separate files (turning equipment into a directory with an index.ts)
+
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
 export const WeaponBaseRow = 0;
@@ -420,9 +422,6 @@ export const BaseWeapons = [
 /*
   Armor TODO:
 
-  Hat
-  Helm1
-  Helm2
   WizardHat
   Circlet
   Robe
@@ -431,8 +430,6 @@ export const BaseWeapons = [
   Cloak
   Boots1
   Boots2
-  Gloves
-  Gauntlets
   Bracers
   Ring
   Necklace
@@ -453,9 +450,9 @@ export const ArmorShield: BaseArmor = {
   location: 'offhand',
   rows: [ArmorRow.Shield],
   mitigation: {
-    piercing: 2,
-    slashing: 2,
-    bludgeoning: 2,
+    piercing: 4,
+    slashing: 4,
+    bludgeoning: 4,
   },
   price: 1000,
   weight: 6,
@@ -467,9 +464,9 @@ export const ArmorBuckler: BaseArmor = {
   location: 'offhand',
   rows: [ArmorRow.Shield],
   mitigation: {
-    piercing: 1,
-    slashing: 1,
-    bludgeoning: 1,
+    piercing: 2,
+    slashing: 2,
+    bludgeoning: 2,
   },
   price: 200,
   weight: 3,
@@ -481,9 +478,9 @@ export const ArmorBreastplate: BaseArmor = {
   location: 'chest',
   rows: [ArmorRow.Breastplate],
   mitigation: {
-    piercing: 4,
-    slashing: 4,
-    bludgeoning: 4,
+    piercing: 6,
+    slashing: 6,
+    bludgeoning: 6,
   },
   price: 4000,
   weight: 20,
@@ -495,12 +492,79 @@ export const ArmorPlate: BaseArmor = {
   location: 'chest',
   rows: [ArmorRow.Plate],
   mitigation: {
-    piercing: 8,
-    slashing: 8,
-    bludgeoning: 8,
+    piercing: 10,
+    slashing: 10,
+    bludgeoning: 10,
   },
   price: 15000,
   weight: 65,
+};
+
+export const ArmorHat: BaseArmor = {
+  id: 'hat',
+  names: ['Hat'],
+  location: 'head',
+  rows: [ArmorRow.Hat],
+  mitigation: {
+    slashing: 1,
+  },
+  price: 20,
+  weight: 0,
+};
+
+export const ArmorWizardHat: BaseArmor = {
+  id: 'wizardHat',
+  names: ['Wizard Hat'],
+  location: 'head',
+  rows: [ArmorRow.WizardHat],
+  mitigation: {
+    slashing: 1,
+    fire: 1,
+    cold: 1,
+  },
+  price: 100,
+  weight: 0,
+};
+
+export const ArmorHelm: BaseArmor = {
+  id: 'helm',
+  names: ['Helm'],
+  location: 'head',
+  rows: [ArmorRow.Helm1, ArmorRow.Helm2],
+  mitigation: {
+    piercing: 2,
+    slashing: 2,
+    bludgeoning: 2,
+  },
+  price: 500,
+  weight: 1,
+};
+
+export const ArmorGloves: BaseArmor = {
+  id: 'gloves',
+  names: ['gloves'],
+  location: 'arm',
+  rows: [ArmorRow.Gloves],
+  mitigation: {
+    piercing: 1,
+    slashing: 1,
+  },
+  price: 30,
+  weight: 0,
+};
+
+export const ArmorGauntlets: BaseArmor = {
+  id: 'gauntlets',
+  names: ['Gauntlets'],
+  location: 'arm',
+  rows: [ArmorRow.Gauntlets],
+  mitigation: {
+    piercing: 2,
+    slashing: 2,
+    bludgeoning: 2,
+  },
+  price: 400,
+  weight: 1,
 };
 
 export const BaseArmors = [
@@ -508,6 +572,11 @@ export const BaseArmors = [
   ArmorBuckler,
   ArmorBreastplate,
   ArmorPlate,
+  ArmorHat,
+  ArmorWizardHat,
+  ArmorHelm,
+  ArmorGloves,
+  ArmorGauntlets,
 ];
 
 export const DamageTypePrefixes: Record<DamageType, string[]> = {
