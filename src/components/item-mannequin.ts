@@ -2,17 +2,16 @@
 import { LitElement, css, customElement, property, svg } from 'lit-element';
 
 import { Character } from '../types/character';
-import {
-  DamageTypeToVariantColumn,
-  ItemInstance,
-  ItemLocation,
-} from '../types/equipment';
+import { DamageTypeToVariantColumn, ItemLocation } from '../types/equipment';
 
 export const SIZE = 32;
 
+// FIXME: Rename component since its not just showing items; probably makes sense to have a common
+// prefix and skip the app prefix too. Something simple like "rl-"
+
 @customElement('item-mannequin')
 export class ItemMannequin extends LitElement {
-  @property({ attribute: false }) character: Character | undefined;
+  @property({ attribute: false }) character = new Character();
 
   static styles = css`
     :host {
@@ -26,8 +25,6 @@ export class ItemMannequin extends LitElement {
   `;
 
   render() {
-    if (!this.character) return undefined;
-
     const { character } = this;
 
     const at = (

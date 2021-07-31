@@ -1,18 +1,14 @@
 /* eslint-disable import/extensions */
 import { html, css, customElement, state } from 'lit-element';
 
-import config from '../config.js';
+import config from '../config';
 import { fromBase62 } from '../helpers/base62';
-import { randomItem, randomWeapon } from '../helpers/equipment';
+import { randomItem } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
 import '../components/item-mannequin';
 import { PRNG } from '../helpers/prng';
-import { Character } from '../types/character.js';
-import {
-  DamageTypeToVariantColumn,
-  VariantColumn,
-} from '../types/equipment.js';
+import { Character } from '../types/character';
 
 export type ActionType = 'battle';
 
@@ -20,12 +16,14 @@ export interface Action {
   type: ActionType;
 }
 
+// FIXME: Move session (with its prng) out of here.
+
 @customElement('page-progress')
 export class PageProgress extends PageElement {
   @state() session = '';
   @state() actions: Action[] = [];
   @state() prng?: PRNG;
-  @state() character?: Character;
+  @state() character = new Character();
 
   static styles = css`
     section {
@@ -40,10 +38,6 @@ export class PageProgress extends PageElement {
       return html`No session`;
     }
 
-    let wy = 1;
-    let wx = 0;
-    let wr = 'common';
-
     if (session != this.session) {
       this.session = session;
       // TODO: Implement an async recreation of all events leading up to now
@@ -55,14 +49,11 @@ export class PageProgress extends PageElement {
 
       this.prng = new PRNG(this.session);
 
-      const weapon = randomWeapon(this.prng, 80);
-      wy = weapon.row;
-      wx = (
-        weapon.secondaryDamageType
-          ? DamageTypeToVariantColumn.get(weapon.secondaryDamageType)
-          : VariantColumn.Regular
-      ) as VariantColumn;
-      wr = weapon.rarity;
+      for (let i = 0; i < 30; i++) {
+        this.character.addItem(randomItem(this.prng, 40));
+      }
+
+      console.log('CHARACTER', this.character);
     }
 
     const example = (level: number) => {
@@ -71,41 +62,9 @@ export class PageProgress extends PageElement {
         JSON.stringify(randomItem(this.prng, level), null, 2);
     };
 
-    // FIXME: Clearly this should be handled elsewhere; also narrowing for types undefined at start should be figured out
-    if (!this.prng) return undefined;
-    this.character = {
-      equipment: {
-        main: randomWeapon(this.prng, 80),
-      },
-      inventory: [],
-      maxHealth: 100,
-      curHealth: 80,
-      level: 30,
-    };
-
     return html`
       <section>
         <h1>Progress</h1>
-
-        <table>
-          <tr>
-            <td><app-sprite dimmed x="2" y="49"></app-sprite></td>
-            <td><app-sprite dimmed x="0" y="32"></app-sprite></td>
-            <td><app-sprite dimmed x="0" y="46"></app-sprite></td>
-          </tr>
-
-          <tr>
-            <td><app-sprite rarity=${wr} x=${wx} y=${wy}></app-sprite></td>
-            <td><app-sprite dimmed x="0" y="37"></app-sprite></td>
-            <td><app-sprite dimmed x="0" y="29"></app-sprite></td>
-          </tr>
-
-          <tr>
-            <td><app-sprite dimmed x="0" y="43"></app-sprite></td>
-            <td><app-sprite dimmed x="0" y="40"></app-sprite></td>
-            <td><app-sprite dimmed x="0" y="45"></app-sprite></td>
-          </tr>
-        </table>
 
         <button @click=${() => example(1)}>1</button>
         <button @click=${() => example(10)}>10</button>

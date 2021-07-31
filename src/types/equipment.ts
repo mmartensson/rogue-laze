@@ -1,3 +1,7 @@
+// FIXME: The reasonable location for MAX_LEVEL would be character.ts, but that currently causes cyclic issues;
+// maybe some constants.ts-ish place later on.
+export const MAX_LEVEL = 100;
+
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
 export const WeaponBaseRow = 0;
@@ -161,6 +165,10 @@ export interface BaseWeapon extends BaseItem {
   speed: Speed;
 }
 
+export function isBaseWeapon(item: BaseItem): item is BaseWeapon {
+  return (item as BaseWeapon).damageType !== undefined;
+}
+
 // IN PROGRESS: refId for lookup of BaseWeapon to find location ... see that it is 'either'
 // (or whatever) and then assign the instance to a slot rather than declare it in the object itself.
 // Three separate lists:
@@ -177,6 +185,10 @@ export interface BaseArmor extends BaseItem {
   location: ArmorLocation;
   rows: ArmorRow[];
   mitigation: DamageTypeMitigation;
+}
+
+export function isBaseArmor(item: BaseItem): item is BaseArmor {
+  return (item as BaseArmor).mitigation !== undefined;
 }
 
 export interface ArmorInstance extends ItemInstanceBase {

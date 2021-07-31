@@ -1,5 +1,4 @@
 /* eslint-disable import/extensions */
-import { MAX_LEVEL } from '../types/character';
 import {
   ArmorInstance,
   BaseArmors,
@@ -9,6 +8,7 @@ import {
   DamageTypePrefixes,
   ItemInstance,
   ItemInstanceBase,
+  MAX_LEVEL,
   Rarity,
   RarityPrefixes,
   WeaponInstance,
@@ -36,7 +36,7 @@ export const randomRarity = (prng: PRNG, playerLevel: number): Rarity => {
   const raw = prng.fraction();
   const adjusted = raw / Math.log10(MAX_LEVEL - playerLevel + 1);
 
-  console.log('Rarity', raw, adjusted);
+  // console.log('Rarity', raw, adjusted);
 
   if (adjusted > 0.9) return 'legendary';
 
