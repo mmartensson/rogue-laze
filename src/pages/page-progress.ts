@@ -29,6 +29,10 @@ export class PageProgress extends PageElement {
     section {
       padding: 1rem;
     }
+
+    item-mannequin {
+      width: 300px;
+    }
   `;
 
   render() {
@@ -56,29 +60,28 @@ export class PageProgress extends PageElement {
       console.log('CHARACTER', this.character);
     }
 
-    const example = (level: number) => {
-      if (!this.prng) return;
-      (this.shadowRoot?.querySelector('#example') as HTMLPreElement).innerHTML =
-        JSON.stringify(randomItem(this.prng, level), null, 2);
-    };
+    const equipmentWeight = Object.values(this.character.equipment)
+      .map((item) => item.weight)
+      .reduce((p, c) => p + c);
+    const inventoryWeight = this.character.inventory
+      .map((item) => item.weight)
+      .reduce((p, c) => p + c);
 
     return html`
       <section>
-        <h1>Progress</h1>
-
-        <button @click=${() => example(1)}>1</button>
-        <button @click=${() => example(10)}>10</button>
-        <button @click=${() => example(20)}>20</button>
-        <button @click=${() => example(30)}>30</button>
-        <button @click=${() => example(50)}>50</button>
-        <button @click=${() => example(70)}>70</button>
-        <button @click=${() => example(90)}>90</button>
-        <button @click=${() => example(100)}>100</button>
-        <pre id="example"></pre>
-
-        <div style="padding-bottom: 100px"></div>
-
+        <h1>Character</h1>
         <item-mannequin .character=${this.character}></item-mannequin>
+        <p>Weight: ${equipmentWeight}</p>
+      </section>
+
+      <section>
+        <h1>Inventory</h1>
+        <ul id="inventory">
+          ${this.character.inventory.map(
+            (item) => html` <li>${item.name}</li> `
+          )}
+        </ul>
+        <p>Weight: ${inventoryWeight}</p>
       </section>
     `;
   }

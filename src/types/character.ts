@@ -2,6 +2,8 @@
 import { BaseItemLookup } from '../helpers/equipment';
 import {
   BaseWeapon,
+  DamageTypeMitigation,
+  isArmorInstance,
   isBaseArmor,
   isBaseWeapon,
   ItemInstance,
@@ -16,6 +18,9 @@ export class Character {
   maxHealth = INITIAL_HEALTH;
   curHealth = INITIAL_HEALTH;
   level = 1;
+
+  // Derived
+  totalMitigation: DamageTypeMitigation = {};
 
   addItem(item: ItemInstance) {
     const base = BaseItemLookup[item.refId];
@@ -79,9 +84,24 @@ export class Character {
       if (oldArmor) {
         this.inventory.push(oldArmor);
       }
+
+      this.recalcTotalMitigation();
     } else {
       // Other items, just having a monetary value
       this.inventory.push(item);
+    }
+  }
+
+  private recalcTotalMitigation() {
+    this.totalMitigation = {};
+    for (const item of Object.values(this.equipment)) {
+      if (isArmorInstance(item)) {
+        for (const [damageType, value] of Object.entries(item.mitigation)) {
+          // FIXME: Cleanup typing
+          (this.totalMitigation as any)[damageType] ||= 0;
+          (this.totalMitigation as any)[damageType] += value;
+        }
+      }
     }
   }
 }

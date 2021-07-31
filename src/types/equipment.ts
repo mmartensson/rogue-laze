@@ -198,6 +198,10 @@ export interface ArmorInstance extends ItemInstanceBase {
   mitigation: DamageTypeMitigation;
 }
 
+export function isArmorInstance(item: ItemInstance): item is ArmorInstance {
+  return (item as ArmorInstance).mitigation !== undefined;
+}
+
 export type ItemInstance = WeaponInstance | ArmorInstance;
 
 export const WeaponDagger: BaseWeapon = {

@@ -15,8 +15,7 @@ export class ItemMannequin extends LitElement {
 
   static styles = css`
     :host {
-      display: block;
-      width: 400px;
+      display: inline-block;
     }
     app-sprite {
       width: calc(100% - 2px);
@@ -103,22 +102,27 @@ export class ItemMannequin extends LitElement {
         ${at(163, 0, 0, 32, 'head')}
         ${at(275, 50, 2, 46, 'neck')}
         ${at(0, 455, 1, 0, 'main')}
-        ${at(163, 255, 0, 37, 'chest')}
+        ${at(163, 215, 0, 37, 'chest')}
         ${at(328, 455, 0, 29, 'offhand')}
         ${at(0, 355, 0, 43, 'arm')}
         ${at(163, 555, 0, 40, 'leg')}
         ${at(328, 355, 0, 45, 'finger')}
 
         <foreignObject x=163 y=400 width="100" height="100">
-          <div>Waist of space (pun intended)</div>
-          <!-- FIXME: Need belts etc. Apparently none in the icon set. -->
+          <div style="text-align: center">${this.character.curHealth} (${
+      this.character.maxHealth
+    })</div>
         </foreignObject>
 
-
-        <foreignObject x=163 y=800 width="100" height="100">
-          <div>Either crop or show information over this part</div>
+        <foreignObject x=63 y=700 width="300" height="300">
+          <ul style="border: solid 1px red; background: white">
+            ${Object.entries(this.character.totalMitigation).map(
+              ([damageType, value]) => svg`
+              <li>${damageType}: ${value}</li>
+            `
+            )}
+          </ul>
         </foreignObject>
-
       </svg>
     `;
   }
