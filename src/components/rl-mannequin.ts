@@ -6,11 +6,8 @@ import { DamageTypeToVariantColumn, ItemLocation } from '../types/equipment';
 
 export const SIZE = 32;
 
-// FIXME: Rename component since its not just showing items; probably makes sense to have a common
-// prefix and skip the app prefix too. Something simple like "rl-"
-
-@customElement('item-mannequin')
-export class ItemMannequin extends LitElement {
+@customElement('rl-mannequin')
+export class RogueLazeMannequin extends LitElement {
   @property({ attribute: false }) character = new Character();
 
   static styles = css`

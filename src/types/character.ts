@@ -2,6 +2,7 @@
 import { BaseItemLookup } from '../helpers/equipment';
 import {
   BaseWeapon,
+  DamageType,
   DamageTypeMitigation,
   isArmorInstance,
   isBaseArmor,
@@ -97,9 +98,9 @@ export class Character {
     for (const item of Object.values(this.equipment)) {
       if (isArmorInstance(item)) {
         for (const [damageType, value] of Object.entries(item.mitigation)) {
-          // FIXME: Cleanup typing
-          (this.totalMitigation as any)[damageType] ||= 0;
-          (this.totalMitigation as any)[damageType] += value;
+          const before = this.totalMitigation[damageType as DamageType];
+          this.totalMitigation[damageType as DamageType] =
+            (before || 0) + value;
         }
       }
     }

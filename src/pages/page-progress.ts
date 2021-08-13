@@ -6,7 +6,7 @@ import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/app-sprite';
-import '../components/item-mannequin';
+import '../components/rl-mannequin';
 import { PRNG } from '../helpers/prng';
 import { Character } from '../types/character';
 
@@ -30,7 +30,7 @@ export class PageProgress extends PageElement {
       padding: 1rem;
     }
 
-    item-mannequin {
+    rl-mannequin {
       width: 300px;
     }
   `;
@@ -70,7 +70,7 @@ export class PageProgress extends PageElement {
     return html`
       <section>
         <h1>Character</h1>
-        <item-mannequin .character=${this.character}></item-mannequin>
+        <rl-mannequin .character=${this.character}></rl-mannequin>
         <p>Weight: ${equipmentWeight}</p>
       </section>
 
