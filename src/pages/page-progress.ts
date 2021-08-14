@@ -5,7 +5,7 @@ import config from '../config';
 import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
-import '../components/app-sprite';
+import '../components/rl-item';
 import '../components/rl-mannequin';
 import { PRNG } from '../helpers/prng';
 import { Character } from '../types/character';
@@ -61,7 +61,7 @@ export class PageProgress extends PageElement {
     }
 
     const equipmentWeight = Object.values(this.character.equipment)
-      .map((item) => item.weight)
+      .map((item) => item?.weight || 0)
       .reduce((p, c) => p + c);
     const inventoryWeight = this.character.inventory
       .map((item) => item.weight)

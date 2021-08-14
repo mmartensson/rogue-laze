@@ -96,11 +96,11 @@ export class Character {
   private recalcTotalMitigation() {
     this.totalMitigation = {};
     for (const item of Object.values(this.equipment)) {
-      if (isArmorInstance(item)) {
+      if (item && isArmorInstance(item)) {
         for (const [damageType, value] of Object.entries(item.mitigation)) {
           const before = this.totalMitigation[damageType as DamageType];
           this.totalMitigation[damageType as DamageType] =
-            (before || 0) + value;
+            (before || 0) + (value || 0);
         }
       }
     }

@@ -187,7 +187,7 @@ export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
   }
 
   for (const [key, value] of Object.entries(mitigation)) {
-    mitigation[key as DamageType] = value + extraMitigation;
+    mitigation[key as DamageType] = (value || 0) + extraMitigation;
   }
 
   return {

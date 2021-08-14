@@ -7,14 +7,14 @@ import { DamageTypeToVariantColumn, ItemLocation } from '../types/equipment';
 export const SIZE = 32;
 
 @customElement('rl-mannequin')
-export class RogueLazeMannequin extends LitElement {
+export class MannequinElement extends LitElement {
   @property({ attribute: false }) character = new Character();
 
   static styles = css`
     :host {
       display: inline-block;
     }
-    app-sprite {
+    rl-item {
       width: calc(100% - 2px);
       height: calc(100% - 2px);
     }
@@ -32,9 +32,8 @@ export class RogueLazeMannequin extends LitElement {
     ) => {
       const item = this.character?.equipment[loc];
       if (item) {
-        // FIXME: Going to be a lot of logic here that should be moved into the app-sprite itself, or be
-        // handled by a helper function. Probably the app-sprite since we want to have a tooltip with
-        // name and stats, meaning the app-sprite needs the instance (and lookup its base). "rl-item"?
+        // FIXME: Going to be a lot of logic here that should be moved into the rl-item itself. We want to have a
+        // tooltip with name and stats, meaning the rl-item needs the instance (and lookup its base).
         const iy = item.row;
         let ix = 0;
         if (item.secondaryDamageType) {
@@ -45,14 +44,14 @@ export class RogueLazeMannequin extends LitElement {
 
         return svg`
           <foreignObject x=${x} y=${y} width="100" height="100">
-            <app-sprite x=${ix} y=${iy} rarity=${item.rarity}></app-sprite>
+            <rl-item x=${ix} y=${iy} rarity=${item.rarity}></rl-item>
           </foreignobject>
         `;
       }
 
       return svg`
         <foreignObject x=${x} y=${y} width="100" height="100">
-          <app-sprite dimmed x=${dx} y=${dy}></app-sprite>
+          <rl-item dimmed x=${dx} y=${dy}></rl-item>
         </foreignobject>
       `;
     };

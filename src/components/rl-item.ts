@@ -4,8 +4,8 @@ export const ROWS = 17;
 export const COLUMNS = 55;
 export const SPRITE_SIDE = 32;
 
-@customElement('app-sprite')
-export class AppSprite extends LitElement {
+@customElement('rl-item')
+export class ItemElement extends LitElement {
   @property({ type: Number }) x!: number;
   @property({ type: Number }) y!: number;
 
