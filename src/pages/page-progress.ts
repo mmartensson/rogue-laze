@@ -62,10 +62,10 @@ export class PageProgress extends PageElement {
 
     const equipmentWeight = Object.values(this.character.equipment)
       .map((item) => item?.weight || 0)
-      .reduce((p, c) => p + c);
+      .reduce((p, c) => p + c, 0);
     const inventoryWeight = this.character.inventory
       .map((item) => item.weight)
-      .reduce((p, c) => p + c);
+      .reduce((p, c) => p + c, 0);
 
     return html`
       <section>
