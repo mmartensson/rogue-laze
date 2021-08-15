@@ -1,4 +1,18 @@
-import { LitElement, html, css, customElement, property } from 'lit-element';
+/* eslint-disable import/extensions */
+import {
+  LitElement,
+  html,
+  css,
+  customElement,
+  property,
+  state,
+} from 'lit-element';
+
+import {
+  DamageTypeToVariantColumn,
+  ItemInstance,
+  Rarity,
+} from '../types/equipment';
 
 export const ROWS = 17;
 export const COLUMNS = 55;
@@ -6,8 +20,14 @@ export const SPRITE_SIDE = 32;
 
 @customElement('rl-item')
 export class ItemElement extends LitElement {
-  @property({ type: Number }) x!: number;
-  @property({ type: Number }) y!: number;
+  @property({ type: Number }) defaultRow = -1;
+  @property({ type: Object, attribute: false }) item!: ItemInstance;
+  @property({ type: String, attribute: 'rarity', reflect: true })
+  rarity: Rarity = 'common';
+  @property({ type: Boolean, attribute: 'dimmed', reflect: true }) dimmed =
+    false;
+  @state() row = -1;
+  @state() col = 0;
 
   static styles = css`
     :host {
@@ -43,9 +63,39 @@ export class ItemElement extends LitElement {
     }
   `;
 
+  shouldUpdate(changedProperties: Map<string, unknown>) {
+    if (changedProperties.has('item')) {
+      this.col = 0;
+
+      if (this.item) {
+        const { row, secondaryDamageType, rarity } = this.item;
+
+        this.row = row;
+        this.rarity = rarity;
+
+        if (secondaryDamageType) {
+          this.col = DamageTypeToVariantColumn.get(
+            secondaryDamageType
+          ) as number;
+        }
+        this.dimmed = false;
+      } else {
+        this.row = this.defaultRow;
+        this.dimmed = true;
+      }
+    } else {
+      this.row = this.defaultRow;
+      this.dimmed = true;
+    }
+
+    return true;
+  }
+
   render() {
+    if (this.row < 0) return undefined;
+
     this.updateComplete.then(() => {
-      this.style.backgroundPosition = `-${this.x * 100}% -${this.y * 100}%`;
+      this.style.backgroundPosition = `-${this.col * 100}% -${this.row * 100}%`;
     });
     return html``;
   }
