@@ -38,9 +38,8 @@ export class ItemElement extends LitElement {
       background-image: url(../images/sprites.png);
 
       border: inset 6px gray;
-      background-color: lightgray;
+      background-color: rgba(128, 128, 128, 0.6);
       background-size: ${ROWS * 100}% ${COLUMNS * 100}%;
-      opacity: 0.8;
       border-radius: 50%;
     }
     :host([rarity='legendary']) {
