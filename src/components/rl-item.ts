@@ -32,30 +32,28 @@ export class ItemElement extends LitElement {
   static styles = css`
     :host {
       display: block;
+      box-sizing: border-box;
       min-width: ${SPRITE_SIDE}px;
       min-height: ${SPRITE_SIDE}px;
       background-image: url(../images/sprites.png);
 
-      border: inset 1px gray;
+      border: inset 6px gray;
       background-color: lightgray;
       background-size: ${ROWS * 100}% ${COLUMNS * 100}%;
       opacity: 0.8;
+      border-radius: 50%;
     }
     :host([rarity='legendary']) {
-      border: inset 1px gold;
-      background-color: goldenrod;
+      border-color: gold;
     }
     :host([rarity='epic']) {
-      border: inset 1px darkviolet;
-      background-color: purple;
+      border-color: darkviolet;
     }
     :host([rarity='rare']) {
-      border: inset 1px darkblue;
-      background-color: blue;
+      border-color: darkblue;
     }
     :host([rarity='uncommon']) {
-      border: inset 1px darkgreen;
-      background-color: green;
+      border-color: green;
     }
     :host([dimmed]) {
       opacity: 0.2;
