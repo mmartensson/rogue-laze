@@ -1,12 +1,14 @@
+/* eslint-disable import/no-duplicates */
 /* eslint-disable import/extensions */
-import { html, css, customElement, state } from 'lit-element';
+import { html, css, customElement, state, query } from 'lit-element';
 
+import '../components/rl-mannequin';
+import { MannequinElement } from '../components/rl-mannequin';
 import config from '../config';
 import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
-import '../components/rl-mannequin';
 import { PRNG } from '../helpers/prng';
 import { Character } from '../types/character';
 
@@ -20,10 +22,12 @@ export interface Action {
 
 @customElement('page-progress')
 export class PageProgress extends PageElement {
-  @state() session = '';
-  @state() actions: Action[] = [];
-  @state() prng?: PRNG;
-  @state() character = new Character();
+  @state() private session = '';
+  @state() private actions: Action[] = [];
+  @state() private prng?: PRNG;
+  @state() private character = new Character();
+
+  @query('rl-mannequin') private mannequin?: MannequinElement;
 
   static styles = css`
     section {
@@ -53,7 +57,7 @@ export class PageProgress extends PageElement {
 
       this.prng = new PRNG(this.session);
 
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 5; i++) {
         this.character.addItem(randomItem(this.prng, 40));
       }
 
@@ -73,6 +77,20 @@ export class PageProgress extends PageElement {
         <rl-mannequin .character=${this.character}></rl-mannequin>
         <p>Weight: ${equipmentWeight}</p>
       </section>
+
+      <button
+        @click=${() => {
+          if (this.prng) {
+            this.character.addItem(randomItem(this.prng, 40));
+            // Forced update of mannequin; going to want a prettier way of handling this. Event? Is a Redux-ish store
+            // overkill?
+            this.requestUpdate();
+            this.mannequin?.requestUpdate();
+          }
+        }}
+      >
+        Add
+      </button>
 
       <section>
         <h1>Inventory</h1>

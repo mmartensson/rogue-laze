@@ -101,16 +101,25 @@ export class MannequinElement extends LitElement {
     })</div>
         </foreignObject>
 
-        <foreignObject x=63 y=700 width="300" height="300">
-          <ul class="mitigations">
-            ${Object.entries(this.character.totalMitigation).map(
-              ([damageType, value]) => svg`
-              <li>${damageType}: ${value}</li>
-            `
-            )}
-          </ul>
-        </foreignObject>
+        ${this.renderMitigations()}
       </svg>
+    `;
+  }
+
+  private renderMitigations() {
+    if (Object.keys(this.character.totalMitigation).length == 0)
+      return undefined;
+
+    const entryMapper = ([damageType, value]: [string, number]) => svg`
+      <li>${damageType}: ${value}</li>
+    `;
+
+    return svg`
+      <foreignObject x=63 y=700 width="300" height="300">
+        <ul class="mitigations">
+          ${Object.entries(this.character.totalMitigation).map(entryMapper)}
+        </ul>
+      </foreignObject>
     `;
   }
 }
