@@ -18,6 +18,7 @@ export class Character {
   inventory: ItemInstance[] = [];
   maxHealth = INITIAL_HEALTH;
   curHealth = INITIAL_HEALTH;
+  coin = 0;
   level = 1;
 
   // Derived
@@ -27,10 +28,14 @@ export class Character {
     const base = BaseItemLookup[item.refId];
 
     if (isBaseWeapon(base)) {
-      // FIXME: Compare prices or some other metric to figure out if the new or old is "better"
-
       if (base.location == 'main-1h') {
         const oldMain = this.equipment.main;
+
+        if (oldMain && oldMain.price >= item.price) {
+          this.inventory.push(item);
+          return;
+        }
+
         this.equipment.main = item;
         if (oldMain) {
           this.inventory.push(oldMain);
@@ -38,6 +43,15 @@ export class Character {
       } else if (base.location == 'main-2h') {
         const oldMain = this.equipment.main;
         const oldOffhand = this.equipment.offhand;
+
+        let oldPrice = 0;
+        if (oldMain) oldPrice += oldMain.price;
+        if (oldOffhand) oldPrice += oldOffhand.price;
+        if (oldPrice >= item.price) {
+          this.inventory.push(item);
+          return;
+        }
+
         this.equipment.main = item;
         if (oldMain) {
           this.inventory.push(oldMain);
@@ -47,6 +61,8 @@ export class Character {
           this.inventory.push(oldOffhand);
         }
       } else if (base.location == 'offhand') {
+        // TODO: Price check
+
         const oldMain = this.equipment.main;
         const oldOffhand = this.equipment.offhand;
         this.equipment.main = item;
@@ -64,6 +80,8 @@ export class Character {
           this.inventory.push(oldOffhand);
         }
       } else if (base.location == 'either') {
+        // TODO: Price check
+
         const oldMain = this.equipment.main;
         const oldOffhand = this.equipment.offhand;
 
@@ -78,9 +96,13 @@ export class Character {
         }
       }
     } else if (isBaseArmor(base)) {
-      // FIXME: Compare prices or some other metric to figure out if the new or old is "better"
-
       const oldArmor = this.equipment[base.location];
+
+      if (oldArmor && oldArmor.price >= item.price) {
+        this.inventory.push(item);
+        return;
+      }
+
       this.equipment[base.location] = item;
       if (oldArmor) {
         this.inventory.push(oldArmor);
@@ -91,6 +113,11 @@ export class Character {
       // Other items, just having a monetary value
       this.inventory.push(item);
     }
+  }
+
+  sellInventory() {
+    this.inventory.forEach((item) => (this.coin += item.price));
+    this.inventory = [];
   }
 
   private recalcTotalMitigation() {

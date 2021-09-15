@@ -1,6 +1,13 @@
 /* eslint-disable import/no-duplicates */
 /* eslint-disable import/extensions */
-import { html, css, customElement, state, query } from 'lit-element';
+import {
+  html,
+  css,
+  customElement,
+  state,
+  query,
+  TemplateResult,
+} from 'lit-element';
 
 import '../components/rl-mannequin';
 import { MannequinElement } from '../components/rl-mannequin';
@@ -17,6 +24,31 @@ export type ActionType = 'battle';
 export interface Action {
   type: ActionType;
 }
+
+// FIXME: Move to some utility module. A bit tricky with classes, unless we have globals.
+// The idea was to have a ::before with color, but may need something fancier that works
+// in any context.
+
+const renderCoin = (coin: number) => {
+  const c = coin % 100;
+  coin = (coin - c) / 100;
+  const s = coin % 100;
+  coin = (coin - s) / 100;
+  const g = coin;
+
+  const t: TemplateResult[] = [];
+  if (g) {
+    t.push(html`<span class="coin-gold">${g}</span>`);
+  }
+  if (s) {
+    t.push(html`<span class="coin-silver">${s}</span>`);
+  }
+  if (c || (!g && !s)) {
+    t.push(html`<span class="coin-copper">${c}</span>`);
+  }
+
+  return t;
+};
 
 // FIXME: Move session (with its prng) out of here.
 
@@ -36,6 +68,24 @@ export class PageProgress extends PageElement {
 
     rl-mannequin {
       width: 300px;
+    }
+
+    .coin-copper::after,
+    .coin-silver::after,
+    .coin-gold::after {
+      content: '⬤';
+      padding-left: 2px;
+      margin-right: 4px;
+    }
+
+    .coin-copper::after {
+      color: #b87333;
+    }
+    .coin-silver::after {
+      color: #c0c0c0;
+    }
+    .coin-gold::after {
+      color: #ffd700;
     }
   `;
 
@@ -76,6 +126,7 @@ export class PageProgress extends PageElement {
         <h1>Character</h1>
         <rl-mannequin .character=${this.character}></rl-mannequin>
         <p>Weight: ${equipmentWeight}</p>
+        <p>Coin: ${renderCoin(this.character.coin)}</p>
       </section>
 
       <button
@@ -90,6 +141,16 @@ export class PageProgress extends PageElement {
         }}
       >
         Add
+      </button>
+
+      <button
+        @click=${() => {
+          this.character.sellInventory();
+          this.requestUpdate();
+          this.mannequin?.requestUpdate();
+        }}
+      >
+        Sell
       </button>
 
       <section>
