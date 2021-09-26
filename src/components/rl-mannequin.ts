@@ -8,7 +8,7 @@ export const SIZE = 32;
 
 @customElement('rl-mannequin')
 export class MannequinElement extends LitElement {
-  @property({ attribute: false }) character = new Character();
+  @property({ attribute: false }) character!: Character;
 
   static styles = css`
     :host {

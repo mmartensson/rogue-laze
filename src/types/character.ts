@@ -24,6 +24,8 @@ export class Character {
   // Derived
   totalMitigation: DamageTypeMitigation = {};
 
+  // FIXME: You can get a longbow in main hand and a axe1h in off-hand
+
   addItem(item: ItemInstance) {
     const base = BaseItemLookup[item.refId];
 

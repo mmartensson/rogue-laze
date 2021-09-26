@@ -94,7 +94,9 @@ export class Game {
     let summary: TickSummary = 'uneventful';
 
     // XXX: Example game logic... need to figure out the real ones later
-    if (this.prng.fraction() > 0.5) {
+    if (this.character.inventory.length > 20) {
+      this.character.sellInventory();
+    } else if (this.prng.fraction() > 0.5) {
       this.character.addItem(randomItem(this.prng, this.character.level));
       summary = 'minor-success';
     }

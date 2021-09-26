@@ -11,19 +11,10 @@ import {
 
 import '../components/rl-mannequin';
 import { MannequinElement } from '../components/rl-mannequin';
-import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
-import { PRNG } from '../helpers/prng';
-import { Character } from '../types/character';
 import { Game } from '../types/game';
-
-export type ActionType = 'battle';
-
-export interface Action {
-  type: ActionType;
-}
 
 // FIXME: Move to some utility module. A bit tricky with classes, unless we have globals.
 // The idea was to have a ::before with color, but may need something fancier that works
@@ -50,16 +41,9 @@ const renderCoin = (coin: number) => {
   return t;
 };
 
-// FIXME: Move session (with its prng) out of here.
-
 @customElement('page-progress')
 export class PageProgress extends PageElement {
   @state() private game!: Game;
-
-  @state() private session = '';
-  @state() private actions: Action[] = [];
-  @state() private prng?: PRNG;
-  @state() private character = new Character();
 
   @query('rl-mannequin') private mannequin?: MannequinElement;
 
@@ -99,31 +83,11 @@ export class PageProgress extends PageElement {
     this.game = new Game(session);
   }
 
+  get character() {
+    return this.game.character;
+  }
+
   render() {
-    const session = this.location?.params?.session as string;
-    if (session == null) {
-      // FIXME: Properly complain and direct user to the home page
-      return html`No session`;
-    }
-
-    if (session != this.session) {
-      this.session = session;
-      // TODO: Implement an async recreation of all events leading up to now
-      // using timestamp and seed. Show some kind of progress indicator.
-      // Some nifty promise will trigger the regular content to be shown.
-
-      const t0 = fromBase62(this.session);
-      console.log('t0', t0);
-
-      this.prng = new PRNG(this.session);
-
-      for (let i = 0; i < 5; i++) {
-        this.character.addItem(randomItem(this.prng, 40));
-      }
-
-      console.log('CHARACTER', this.character);
-    }
-
     const equipmentWeight = Object.values(this.character.equipment)
       .map((item) => item?.weight || 0)
       .reduce((p, c) => p + c, 0);
@@ -141,13 +105,11 @@ export class PageProgress extends PageElement {
 
       <button
         @click=${() => {
-          if (this.prng) {
-            this.character.addItem(randomItem(this.prng, 40));
-            // Forced update of mannequin; going to want a prettier way of handling this. Event? Is a Redux-ish store
-            // overkill?
-            this.requestUpdate();
-            this.mannequin?.requestUpdate();
-          }
+          this.character.addItem(randomItem(this.game.prng, 40));
+          // Forced update of mannequin; going to want a prettier way of handling this. Event? Is a Redux-ish store
+          // overkill?
+          this.requestUpdate();
+          this.mannequin?.requestUpdate();
         }}
       >
         Add
@@ -165,7 +127,10 @@ export class PageProgress extends PageElement {
 
       <button
         @click=${async () => {
-          console.log('Tick?', await this.game.scheduledTick());
+          const tickEvent = await this.game.scheduledTick();
+          console.log('Tick event', tickEvent);
+          this.requestUpdate();
+          this.mannequin?.requestUpdate();
         }}
       >
         Tick
