@@ -54,7 +54,7 @@ const renderCoin = (coin: number) => {
 
 @customElement('page-progress')
 export class PageProgress extends PageElement {
-  @state() private game: Game;
+  @state() private game!: Game;
 
   @state() private session = '';
   @state() private actions: Action[] = [];
@@ -91,13 +91,12 @@ export class PageProgress extends PageElement {
     }
   `;
 
-  constructor() {
-    super();
+  connectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
+    super.connectedCallback();
 
-    // Really. The page-progress is created before the parameters are available? Need to get rid of the router.
     const session = this.location?.params?.session as string;
-    console.log('session', session);
-    this.game = new Game('sK7po7S'); // hardcoded session because of silly router thingy
+    this.game = new Game(session);
   }
 
   render() {
@@ -165,8 +164,8 @@ export class PageProgress extends PageElement {
       </button>
 
       <button
-        @click=${() => {
-          console.log('Tick?', this.game.tick());
+        @click=${async () => {
+          console.log('Tick?', await this.game.scheduledTick());
         }}
       >
         Tick

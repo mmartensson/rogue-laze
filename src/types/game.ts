@@ -11,6 +11,7 @@ export type Ticks = number;
 
 export type TickSummary =
   | 'too-early'
+  | 'already-scheduled'
   | 'uneventful'
   | 'minor-success'
   | 'major-success'
@@ -34,6 +35,7 @@ export class Game {
   t1: EpochMs; // Time of first tick; after t0 and divisible by TICK_MS
   lastHandled: Ticks;
   timeOfDeath?: Ticks;
+  scheduled?: NodeJS.Timeout;
 
   constructor(session: string) {
     this.session = session;
@@ -45,10 +47,16 @@ export class Game {
   }
 
   scheduledTick(): Promise<TickEvent> {
+    if (this.scheduled) {
+      return Promise.resolve({
+        summary: 'already-scheduled',
+      });
+    }
+
     const tc = +Date.now();
 
     return new Promise((resolve) => {
-      const ts = (this.lastHandled + 1) * TICK_MS;
+      const ts = (this.lastHandled + 1) * TICK_MS + this.t1;
 
       if (ts < tc) {
         resolve(this.tick());
@@ -56,7 +64,10 @@ export class Game {
       }
 
       const timeout = ts - tc;
-      setTimeout(() => {
+      this.scheduled = setTimeout(() => {
+        const tt = +Date.now();
+        // console.log(`Waited ${timeout} ms at ${tc} with the goal of reaching ${ts}, ended up at ${tt}`);
+        this.scheduled = undefined;
         resolve(this.tick());
       }, timeout);
     });
