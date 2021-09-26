@@ -48,7 +48,15 @@ export class PageProgress extends PageElement {
   @query('rl-mannequin') private mannequin?: MannequinElement;
 
   static styles = css`
+    :host {
+      background-color: #668;
+      display: flex;
+      flex-direction: row;
+    }
+
     section {
+      display: flex;
+      flex-direction: column;
       padding: 1rem;
     }
 
@@ -72,6 +80,10 @@ export class PageProgress extends PageElement {
     }
     .coin-gold::after {
       color: #ffd700;
+    }
+
+    h1 {
+      align-self: center;
     }
   `;
 
@@ -100,50 +112,54 @@ export class PageProgress extends PageElement {
         <h1>Character</h1>
         <rl-mannequin .character=${this.character}></rl-mannequin>
         <p>Weight: ${equipmentWeight}</p>
-        <p>Coin: ${renderCoin(this.character.coin)}</p>
       </section>
 
-      <button
-        @click=${() => {
-          this.character.addItem(randomItem(this.game.prng, 40));
-          // Forced update of mannequin; going to want a prettier way of handling this. Event? Is a Redux-ish store
-          // overkill?
-          this.requestUpdate();
-          this.mannequin?.requestUpdate();
-        }}
-      >
-        Add
-      </button>
-
-      <button
-        @click=${() => {
-          this.character.sellInventory();
-          this.requestUpdate();
-          this.mannequin?.requestUpdate();
-        }}
-      >
-        Sell
-      </button>
-
-      <button
-        @click=${async () => {
-          const tickEvent = await this.game.scheduledTick();
-          console.log('Tick event', tickEvent);
-          this.requestUpdate();
-          this.mannequin?.requestUpdate();
-        }}
-      >
-        Tick
-      </button>
-
-      <section>
+      <section style="width: 400px">
         <h1>Inventory</h1>
+        <p>Coin: ${renderCoin(this.character.coin)}</p>
         <ul id="inventory">
           ${this.character.inventory.map(
             (item) => html` <li>${item.name}</li> `
           )}
         </ul>
         <p>Weight: ${inventoryWeight}</p>
+      </section>
+
+      <section>
+        <h1>Debug</h1>
+
+        <button
+          @click=${() => {
+            this.character.addItem(randomItem(this.game.prng, 40));
+            // Forced update of mannequin; going to want a prettier way of handling this. Event? Is a Redux-ish store
+            // overkill?
+            this.requestUpdate();
+            this.mannequin?.requestUpdate();
+          }}
+        >
+          Add
+        </button>
+
+        <button
+          @click=${() => {
+            this.character.sellInventory();
+            this.requestUpdate();
+            this.mannequin?.requestUpdate();
+          }}
+        >
+          Sell
+        </button>
+
+        <button
+          @click=${async () => {
+            const tickEvent = await this.game.scheduledTick();
+            console.log('Tick event', tickEvent);
+            this.requestUpdate();
+            this.mannequin?.requestUpdate();
+          }}
+        >
+          Tick
+        </button>
       </section>
     `;
   }

@@ -46,8 +46,7 @@ export class AppIndex extends LitElement {
       color: #bbb;
     }
 
-    main,
-    main > * {
+    main {
       display: flex;
       flex: 1;
       flex-direction: column;
