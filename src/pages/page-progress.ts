@@ -44,6 +44,7 @@ const renderCoin = (coin: number) => {
 @customElement('page-progress')
 export class PageProgress extends PageElement {
   @state() private game!: Game;
+  @state() private fastForwarding = false;
 
   @query('rl-mannequin') private mannequin?: MannequinElement;
 
@@ -85,6 +86,10 @@ export class PageProgress extends PageElement {
     h1 {
       align-self: center;
     }
+
+    #inventory {
+      width: 400px;
+    }
   `;
 
   connectedCallback() {
@@ -100,6 +105,10 @@ export class PageProgress extends PageElement {
   }
 
   render() {
+    if (this.fastForwarding) {
+      return this.renderFastForwarding();
+    }
+
     const equipmentWeight = Object.values(this.character.equipment)
       .map((item) => item?.weight || 0)
       .reduce((p, c) => p + c, 0);
@@ -108,13 +117,13 @@ export class PageProgress extends PageElement {
       .reduce((p, c) => p + c, 0);
 
     return html`
-      <section>
+      <section id="character">
         <h1>Character</h1>
         <rl-mannequin .character=${this.character}></rl-mannequin>
         <p>Weight: ${equipmentWeight}</p>
       </section>
 
-      <section style="width: 400px">
+      <section id="inventory">
         <h1>Inventory</h1>
         <p>Coin: ${renderCoin(this.character.coin)}</p>
         <ul id="inventory">
@@ -162,5 +171,37 @@ export class PageProgress extends PageElement {
         </button>
       </section>
     `;
+  }
+
+  async updated() {
+    const tickEvent = await this.game.scheduledTick();
+    if (tickEvent.summary === 'already-scheduled') return;
+
+    const { max, current } = tickEvent;
+    if (max !== undefined && current !== undefined) {
+      const diff = max - current;
+      if (diff > 100 && !this.fastForwarding) {
+        this.fastForwarding = true;
+      }
+      if (diff < 5 && this.fastForwarding) {
+        this.fastForwarding = false;
+        console.log(`Fast forwarding ended. Currenly at tick ${current}`);
+      }
+    }
+
+    if (this.fastForwarding) {
+      // FIXME: Some fancy progress update properties, meaning not explicit requestUpdate() needed
+      // If we expect the logic to actually ever take a couple of seconds to run, then we can use
+      // tickEvent.summary === 'major-success' etc to do fancy flashes on the progress bar to give
+      // a little hint as to where things are going.
+      this.requestUpdate();
+    } else {
+      this.requestUpdate();
+      this.mannequin?.requestUpdate();
+    }
+  }
+
+  renderFastForwarding() {
+    return html` <div>Fast forwarding</div> `;
   }
 }
