@@ -18,6 +18,7 @@ import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
 import { PRNG } from '../helpers/prng';
 import { Character } from '../types/character';
+import { Game } from '../types/game';
 
 export type ActionType = 'battle';
 
@@ -54,6 +55,8 @@ const renderCoin = (coin: number) => {
 
 @customElement('page-progress')
 export class PageProgress extends PageElement {
+  @state() private game: Game;
+
   @state() private session = '';
   @state() private actions: Action[] = [];
   @state() private prng?: PRNG;
@@ -88,6 +91,15 @@ export class PageProgress extends PageElement {
       color: #ffd700;
     }
   `;
+
+  constructor() {
+    super();
+
+    // Really. The page-progress is created before the parameters are available? Need to get rid of the router.
+    const session = this.location?.params?.session as string;
+    console.log('session', session);
+    this.game = new Game('sK7po7S'); // hardcoded session because of silly router thingy
+  }
 
   render() {
     const session = this.location?.params?.session as string;
@@ -151,6 +163,14 @@ export class PageProgress extends PageElement {
         }}
       >
         Sell
+      </button>
+
+      <button
+        @click=${() => {
+          console.log('Tick?', this.game.tick());
+        }}
+      >
+        Tick
       </button>
 
       <section>
