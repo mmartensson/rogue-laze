@@ -1,20 +1,9 @@
-/**
- * Copyright (c) IBM, Corp. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+import { html, css, customElement, LitElement } from 'lit-element';
 
-import { html, css, customElement } from 'lit-element';
-
-import {
-  PageElementNotFound,
-  pageNotFoundMeta,
-} from '../helpers/page-element-not-found.js';
 import { urlForName } from '../router/index.js';
 
 @customElement('page-not-found')
-export class PageNotFound extends PageElementNotFound {
+export class PageNotFound extends LitElement {
   static styles = css`
     :host {
       display: block;
@@ -36,9 +25,5 @@ export class PageNotFound extends PageElementNotFound {
         </p>
       </section>
     `;
-  }
-
-  meta() {
-    return pageNotFoundMeta;
   }
 }

@@ -11,7 +11,6 @@ import {
 
 import '../components/rl-mannequin';
 import { MannequinElement } from '../components/rl-mannequin';
-import config from '../config';
 import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
@@ -183,12 +182,5 @@ export class PageProgress extends PageElement {
         <p>Weight: ${inventoryWeight}</p>
       </section>
     `;
-  }
-
-  meta() {
-    return {
-      title: `${config.appName} progress`,
-      description: `${config.appName} progress`,
-    };
   }
 }

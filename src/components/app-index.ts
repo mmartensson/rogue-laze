@@ -1,13 +1,5 @@
-/**
- * Copyright (c) IBM, Corp. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import { LitElement, html, css, customElement, query } from 'lit-element';
 
-import config from '../config.js';
 import { attachRouter, urlForName } from '../router/index.js';
 
 import 'pwa-helper-components/pwa-install-button.js';
@@ -93,7 +85,7 @@ export class AppIndex extends LitElement {
       <main role="main"></main>
 
       <footer>
-        <span>Environment: ${config.environment}</span>
+        <span>Copyright and stuff, I guess</span>
       </footer>
     `;
   }

@@ -13,8 +13,10 @@ import {
   RarityPrefixes,
   WeaponInstance,
 } from '../types/equipment';
-import { clone } from './html-meta-manager/utils';
 import { PRNG } from './prng';
+
+// FIXME: To some other utility file ... or import a better implementation
+const clone = (input: any) => JSON.parse(JSON.stringify(input));
 
 export const randomDamageTypePrefix = (
   prng: PRNG,

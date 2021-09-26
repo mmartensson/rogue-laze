@@ -1,7 +1,6 @@
 /* eslint-disable import/extensions */
 import { html, css, customElement } from 'lit-element';
 
-import config from '../config.js';
 import { toBase62 } from '../helpers/base62';
 import { PageElement } from '../helpers/page-element.js';
 import { urlForName } from '../router';
@@ -35,13 +34,5 @@ export class PageHome extends PageElement {
         <button @click=${startNew}>Start new</button>
       </section>
     `;
-  }
-
-  meta() {
-    return {
-      title: config.appName,
-      titleTemplate: null,
-      description: `${config.appName} start page`,
-    };
   }
 }
