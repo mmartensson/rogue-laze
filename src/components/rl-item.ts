@@ -13,6 +13,10 @@ import {
   ItemInstance,
   Rarity,
 } from '../types/equipment';
+import {
+  registerHoverTarget,
+  unregisterHoverTarget,
+} from './rl-item-describer';
 
 export const ROWS = 17;
 export const COLUMNS = 55;
@@ -59,6 +63,18 @@ export class ItemElement extends LitElement {
       filter: grayscale(100%);
     }
   `;
+
+  connectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
+    super.connectedCallback();
+    registerHoverTarget(this);
+  }
+
+  disconnectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
+    super.disconnectedCallback();
+    unregisterHoverTarget(this);
+  }
 
   shouldUpdate(changedProperties: Map<string, unknown>) {
     if (changedProperties.has('item')) {

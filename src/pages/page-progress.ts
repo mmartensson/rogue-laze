@@ -16,6 +16,9 @@ import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
 import { Game } from '../types/game';
 
+// TODO: Add a nifty mouseover for items, for use on mannequin and in inventory and also in prose with associated items
+// (the goblin dropped a [Smelly Spear]).
+
 // FIXME: Move to some utility module. A bit tricky with classes, unless we have globals.
 // The idea was to have a ::before with color, but may need something fancier that works
 // in any context.
@@ -89,6 +92,8 @@ export class PageProgress extends PageElement {
 
     #inventory {
       width: 400px;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
   `;
 
