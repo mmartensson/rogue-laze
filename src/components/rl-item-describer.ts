@@ -152,13 +152,12 @@ export class ItemDescriberElement extends LitElement {
       info.push(html`<dl>${mits}</dl>`);
     }
 
-    // FIXME: Fancy price rendering
     info.push(html`
       <dl>
         <dt>Weight</dt>
         <dd>${this.item.weight}</dd>
         <dt>Price</dt>
-        <dd>${this.item.price}</dd>
+        <dd><rl-coin coin=${this.item.price}></rl-coin></dd>
       </dl>
     `);
 

@@ -1,48 +1,17 @@
 /* eslint-disable import/no-duplicates */
 /* eslint-disable import/extensions */
-import {
-  html,
-  css,
-  customElement,
-  state,
-  query,
-  TemplateResult,
-} from 'lit-element';
+import { html, css, customElement, state, query } from 'lit-element';
 
 import '../components/rl-mannequin';
 import { MannequinElement } from '../components/rl-mannequin';
 import { randomItem } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
+import '../components/rl-coin';
 import { Game } from '../types/game';
 
 // TODO: Add a nifty mouseover for items, for use on mannequin and in inventory and also in prose with associated items
 // (the goblin dropped a [Smelly Spear]).
-
-// FIXME: Move to some utility module. A bit tricky with classes, unless we have globals.
-// The idea was to have a ::before with color, but may need something fancier that works
-// in any context.
-
-const renderCoin = (coin: number) => {
-  const c = coin % 100;
-  coin = (coin - c) / 100;
-  const s = coin % 100;
-  coin = (coin - s) / 100;
-  const g = coin;
-
-  const t: TemplateResult[] = [];
-  if (g) {
-    t.push(html`<span class="coin-gold">${g}</span>`);
-  }
-  if (s) {
-    t.push(html`<span class="coin-silver">${s}</span>`);
-  }
-  if (c || (!g && !s)) {
-    t.push(html`<span class="coin-copper">${c}</span>`);
-  }
-
-  return t;
-};
 
 @customElement('page-progress')
 export class PageProgress extends PageElement {
@@ -66,24 +35,6 @@ export class PageProgress extends PageElement {
 
     rl-mannequin {
       width: 300px;
-    }
-
-    .coin-copper::after,
-    .coin-silver::after,
-    .coin-gold::after {
-      content: '⬤';
-      padding-left: 2px;
-      margin-right: 4px;
-    }
-
-    .coin-copper::after {
-      color: #b87333;
-    }
-    .coin-silver::after {
-      color: #c0c0c0;
-    }
-    .coin-gold::after {
-      color: #ffd700;
     }
 
     h1 {
@@ -130,7 +81,7 @@ export class PageProgress extends PageElement {
 
       <section id="inventory">
         <h1>Inventory</h1>
-        <p>Coin: ${renderCoin(this.character.coin)}</p>
+        <p>Coin: <rl-coin coin=${this.character.coin}></rl-coin></p>
         <ul id="inventory">
           ${this.character.inventory.map(
             (item) => html` <li>${item.name}</li> `
