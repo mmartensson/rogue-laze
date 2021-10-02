@@ -1,8 +1,14 @@
 /* eslint-disable import/extensions */
 import { LitElement, html, css, customElement, property } from 'lit-element';
-import { nothing } from 'lit-html';
+import { nothing, TemplateResult } from 'lit-html';
 
-import { ItemInstance, Rarity } from '../types/equipment';
+import {
+  isArmorInstance,
+  ArmorInstance,
+  ItemInstance,
+  Rarity,
+  DamageType,
+} from '../types/equipment';
 
 export const ROWS = 17;
 export const COLUMNS = 55;
@@ -43,6 +49,10 @@ export const unregisterHoverTarget = (target: HTMLElement) => {
   target.removeEventListener('mouseleave', mouseLeave);
 };
 
+export const ucfirst = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.substring(1);
+};
+
 @customElement('rl-item-describer')
 export class ItemDescriberElement extends LitElement {
   @property({ type: Boolean, attribute: 'show-image' }) showImage = false;
@@ -60,7 +70,7 @@ export class ItemDescriberElement extends LitElement {
       top: 0;
       left: 0;
       width: 300px;
-      height: 200px;
+      min-height: 100px;
 
       border: inset 3px gray;
       background-color: rgba(128, 128, 128, 0.9);
@@ -89,6 +99,23 @@ export class ItemDescriberElement extends LitElement {
       align-self: center;
       font-weight: bold;
     }
+
+    dl {
+      display: flex;
+      flex-flow: row wrap;
+      font-size: 80%;
+    }
+    dt {
+      flex-basis: 30%;
+      padding: 2px 4px;
+      font-weight: bold;
+      text-align: right;
+    }
+    dd {
+      flex-grow: 1;
+      margin: 0;
+      padding: 2px 4px;
+    }
   `;
 
   connectedCallback() {
@@ -111,11 +138,30 @@ export class ItemDescriberElement extends LitElement {
     // TODO: showImage would add an <rl-item>... clearly we should not add show-image to <rl-item> itself and cause infinite recursion
     // TODO: Maybe we let rl-item render the text-only representation too
 
-    // TODO: Difference rendering for different item types
+    const info: TemplateResult[] = [
+      html`<div class="name">${this.item.name}</div>`,
+    ];
 
-    return html`
-      <div class="name">${this.item.name}</div>
-      <div class="weight">${this.item.weight}</div>
-    `;
+    if (isArmorInstance(this.item)) {
+      const armor: ArmorInstance = this.item;
+      const mits = (Object.keys(armor.mitigation) as DamageType[]).sort().map(
+        (damageType) =>
+          html`<dt>${ucfirst(damageType)}</dt>
+            <dd>${armor.mitigation[damageType]}</dd>`
+      );
+      info.push(html`<dl>${mits}</dl>`);
+    }
+
+    // FIXME: Fancy price rendering
+    info.push(html`
+      <dl>
+        <dt>Weight</dt>
+        <dd>${this.item.weight}</dd>
+        <dt>Price</dt>
+        <dd>${this.item.price}</dd>
+      </dl>
+    `);
+
+    return info;
   }
 }
