@@ -42,6 +42,7 @@ export class PageProgress extends PageElement {
     }
 
     #inventory {
+      padding: 0;
       width: 400px;
       overflow-y: auto;
       overflow-x: hidden;
@@ -84,7 +85,7 @@ export class PageProgress extends PageElement {
         <p>Coin: <rl-coin coin=${this.character.coin}></rl-coin></p>
         <ul id="inventory">
           ${this.character.inventory.map(
-            (item) => html` <li>${item.name}</li> `
+            (item) => html` <rl-item .item=${item as any}></rl-item></li> `
           )}
         </ul>
         <p>Weight: ${inventoryWeight}</p>

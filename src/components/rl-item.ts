@@ -30,6 +30,7 @@ export class ItemElement extends LitElement {
   rarity: Rarity = 'common';
   @property({ type: Boolean, attribute: 'dimmed', reflect: true }) dimmed =
     false;
+  @property({ type: Boolean, attribute: 'image', reflect: true }) image = false;
   @state() row = -1;
   @state() col = 0;
 
@@ -37,6 +38,9 @@ export class ItemElement extends LitElement {
     :host {
       display: block;
       box-sizing: border-box;
+    }
+
+    :host([image]) {
       min-width: ${SPRITE_SIDE}px;
       min-height: ${SPRITE_SIDE}px;
       background-image: url(../images/sprites.png);
@@ -48,15 +52,19 @@ export class ItemElement extends LitElement {
     }
     :host([rarity='legendary']) {
       border-color: gold;
+      color: gold;
     }
     :host([rarity='epic']) {
       border-color: darkviolet;
+      color: darkviolet;
     }
     :host([rarity='rare']) {
       border-color: darkblue;
+      color: #14f;
     }
     :host([rarity='uncommon']) {
       border-color: green;
+      color: #4c4;
     }
     :host([dimmed]) {
       opacity: 0.2;
@@ -105,6 +113,10 @@ export class ItemElement extends LitElement {
   }
 
   render() {
+    if (!this.image) {
+      return html`${this.item.name}`;
+    }
+
     if (this.row < 0) return undefined;
 
     this.updateComplete.then(() => {

@@ -65,7 +65,6 @@ export class AppIndex extends LitElement {
 
   render() {
     return html`
-      <rl-item-describer></rl-item-describer>
       <header>
         <nav>
           <a href="${urlForName('home')}">Home</a>
@@ -87,6 +86,7 @@ export class AppIndex extends LitElement {
       <footer>
         <span>Copyright and stuff, I guess</span>
       </footer>
+      <rl-item-describer></rl-item-describer>
     `;
   }
 

@@ -42,7 +42,7 @@ export class MannequinElement extends LitElement {
 
       return svg`
         <foreignObject x=${x} y=${y} width="100" height="100">
-          <rl-item .item=${item} .defaultRow=${def}></rl-item>
+          <rl-item .item=${item} .defaultRow=${def} image></rl-item>
         </foreignobject>
       `;
     };
