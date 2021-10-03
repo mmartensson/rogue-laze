@@ -137,12 +137,12 @@ export const randomWeapon = (
   playerLevel: number
 ): WeaponInstance => {
   const baseWeapon = prng.pick(BaseWeapons);
-  const { rows, speed, damageDice } = baseWeapon;
+  const { rows, speed, price } = baseWeapon;
   const commons = randomItemInstanceCommons(prng, playerLevel, baseWeapon);
-  const { secondaryDamageType } = commons;
+  const { rarity, secondaryDamageType } = commons;
   let { name } = commons;
 
-  // TODO: Improve damage based on rarity
+  // TODO: Randomly adjust adjust speed (and price to match); adding an additional prefix (sluggish, speedy ...)
 
   const row = prng.pick(rows);
 
@@ -150,12 +150,36 @@ export const randomWeapon = (
     name = randomDamageTypePrefix(prng, secondaryDamageType) + ' ' + name;
   }
 
+  let damageMod = 0;
+  let secondaryDamage: number | undefined = 1;
+
+  switch (rarity) {
+    case 'uncommon':
+      damageMod = 1;
+      break;
+    case 'rare':
+      damageMod = 2;
+      secondaryDamage = 2;
+      break;
+    case 'epic':
+      damageMod = 3;
+      break;
+    case 'legendary':
+      damageMod = 5;
+      secondaryDamage = 3;
+      break;
+  }
+
+  if (!secondaryDamageType) secondaryDamage = undefined;
+
   return {
     ...commons,
     name,
     row,
     speed,
-    damageDice,
+    price,
+    damageMod,
+    secondaryDamage,
   };
 };
 

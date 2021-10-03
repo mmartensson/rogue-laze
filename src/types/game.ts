@@ -3,6 +3,7 @@ import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PRNG } from '../helpers/prng';
 import { Character } from './character';
+import { MAX_LEVEL } from './equipment';
 
 export const TICK_MS = 5000;
 
@@ -94,6 +95,13 @@ export class Game {
     let summary: TickSummary = 'uneventful';
 
     // XXX: Example game logic... need to figure out the real ones later
+
+    if (this.character.level < MAX_LEVEL) {
+      if (this.prng.fraction() > 0.999) {
+        this.character.level++;
+      }
+    }
+
     if (this.character.inventory.length > 20) {
       this.character.sellInventory();
     } else if (this.prng.fraction() > 0.5) {

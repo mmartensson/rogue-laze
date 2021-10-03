@@ -8,6 +8,9 @@ import {
   ItemInstance,
   Rarity,
   DamageType,
+  isWeaponInstance,
+  WeaponInstance,
+  lookupBaseWeapon,
 } from '../types/equipment';
 
 import './rl-coin';
@@ -155,6 +158,30 @@ export class ItemDescriberElement extends LitElement {
             <dd>${armor.mitigation[damageType]}</dd>`
       );
       info.push(html`<dl>${mits}</dl>`);
+    }
+
+    if (isWeaponInstance(this.item)) {
+      const base = lookupBaseWeapon(this.item.refId);
+      const secondaryDamageTmpl = this.item.secondaryDamageType
+        ? html`
+            <dt>${this.item.secondaryDamageType}</dt>
+            <dd>${this.item.secondaryDamage}</dd>
+          `
+        : nothing;
+
+      info.push(html`
+        <dl>
+          <dt>${base?.damageType}</dt>
+          <dd>
+            d${base?.damageDice}${this.item.damageMod > 0
+              ? '+' + this.item.damageMod
+              : nothing}
+          </dd>
+          ${secondaryDamageTmpl}
+          <dt>Speed</dt>
+          <dd>${this.item.speed}</dd>
+        </dl>
+      `);
     }
 
     const priceTmpl = html`

@@ -179,8 +179,13 @@ export function isBaseWeapon(item: BaseItem): item is BaseWeapon {
 // is blocked. Typically that is shown as a dimmed main weapon in offhand (instead of dimmed shield).
 export interface WeaponInstance extends ItemInstanceBase {
   row: WeaponRow;
-  damageDice: Dice;
+  damageMod: number;
+  secondaryDamage?: number;
   speed: Speed;
+}
+
+export function isWeaponInstance(item: ItemInstance): item is WeaponInstance {
+  return (item as WeaponInstance).speed !== undefined;
 }
 
 export interface BaseArmor extends BaseItem {
@@ -423,6 +428,9 @@ export const BaseWeapons = [
   WeaponScythe,
 ];
 
+export const lookupBaseWeapon = (refId: string) =>
+  BaseWeapons.find((w) => w.id == refId);
+
 /*
   Armor TODO:
 
@@ -582,6 +590,9 @@ export const BaseArmors = [
   ArmorGloves,
   ArmorGauntlets,
 ];
+
+export const lookupBaseArmor = (refId: string) =>
+  BaseArmors.find((w) => w.id == refId);
 
 export const DamageTypePrefixes: Record<DamageType, string[]> = {
   acid: ['Gooey', 'Corroding', 'Erosive', 'Biting'],
