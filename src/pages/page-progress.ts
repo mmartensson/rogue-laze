@@ -4,7 +4,6 @@ import { html, css, customElement, state, query } from 'lit-element';
 
 import '../components/rl-mannequin';
 import { MannequinElement } from '../components/rl-mannequin';
-import { randomItem } from '../helpers/equipment';
 import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
 import '../components/rl-coin';
@@ -66,9 +65,6 @@ export class PageProgress extends PageElement {
       return this.renderFastForwarding();
     }
 
-    const equipmentWeight = Object.values(this.character.equipment)
-      .map((item) => item?.weight || 0)
-      .reduce((p, c) => p + c, 0);
     const inventoryWeight = this.character.inventory
       .map((item) => item.weight)
       .reduce((p, c) => p + c, 0);
@@ -77,7 +73,6 @@ export class PageProgress extends PageElement {
       <section id="character">
         <h1>Character</h1>
         <rl-mannequin .character=${this.character}></rl-mannequin>
-        <p>Weight: ${equipmentWeight}</p>
       </section>
 
       <section id="inventory">
@@ -89,43 +84,6 @@ export class PageProgress extends PageElement {
           )}
         </ul>
         <p>Weight: ${inventoryWeight}</p>
-      </section>
-
-      <section>
-        <h1>Debug</h1>
-
-        <button
-          @click=${() => {
-            this.character.addItem(randomItem(this.game.prng, 40));
-            // Forced update of mannequin; going to want a prettier way of handling this. Event? Is a Redux-ish store
-            // overkill?
-            this.requestUpdate();
-            this.mannequin?.requestUpdate();
-          }}
-        >
-          Add
-        </button>
-
-        <button
-          @click=${() => {
-            this.character.sellInventory();
-            this.requestUpdate();
-            this.mannequin?.requestUpdate();
-          }}
-        >
-          Sell
-        </button>
-
-        <button
-          @click=${async () => {
-            const tickEvent = await this.game.scheduledTick();
-            console.log('Tick event', tickEvent);
-            this.requestUpdate();
-            this.mannequin?.requestUpdate();
-          }}
-        >
-          Tick
-        </button>
       </section>
     `;
   }

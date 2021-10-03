@@ -2,7 +2,10 @@
 import { LitElement, css, customElement, property, svg } from 'lit-element';
 
 import { Character } from '../types/character';
-import { ItemLocation } from '../types/equipment';
+import { ArmorInstance, ItemLocation } from '../types/equipment';
+
+import './rl-item';
+import './rl-item-describer';
 
 export const SIZE = 32;
 
@@ -23,14 +26,7 @@ export class MannequinElement extends LitElement {
       text-align: center;
       font-size: 150%;
     }
-    ul.mitigations {
-      border: solid 3px rgba(0, 0, 128, 0.3);
-      border-radius: 6px;
-      background: white;
-      font-size: 120%;
-    }
-    ul.mitigations li:first-letter {
-      text-transform: capitalize;
+    .summary {
     }
   `;
 
@@ -101,24 +97,32 @@ export class MannequinElement extends LitElement {
     })</div>
         </foreignObject>
 
-        ${this.renderMitigations()}
+        ${this.renderSummary()}
       </svg>
     `;
   }
 
-  private renderMitigations() {
+  private renderSummary() {
     if (Object.keys(this.character.totalMitigation).length == 0)
       return undefined;
 
-    const entryMapper = ([damageType, value]: [string, number]) => svg`
-      <li>${damageType}: ${value}</li>
-    `;
+    const equipmentWeight = Object.values(this.character.equipment)
+      .map((item) => item?.weight || 0)
+      .reduce((p, c) => p + c, 0);
+
+    const characterAsItem: ArmorInstance = {
+      row: 0,
+      mitigation: this.character.totalMitigation,
+      refId: 'character',
+      name: 'Summary',
+      rarity: 'common',
+      price: 0,
+      weight: equipmentWeight,
+    };
 
     return svg`
       <foreignObject x=63 y=700 width="300" height="300">
-        <ul class="mitigations">
-          ${Object.entries(this.character.totalMitigation).map(entryMapper)}
-        </ul>
+        <rl-item-describer visible .item=${characterAsItem} class="summary"></rl-item-describer>
       </foreignObject>
     `;
   }

@@ -10,6 +10,8 @@ import {
   DamageType,
 } from '../types/equipment';
 
+import './rl-coin';
+
 export const ROWS = 17;
 export const COLUMNS = 55;
 export const SPRITE_SIDE = 32;
@@ -49,12 +51,9 @@ export const unregisterHoverTarget = (target: HTMLElement) => {
   target.removeEventListener('mouseleave', mouseLeave);
 };
 
-export const ucfirst = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.substring(1);
-};
-
 @customElement('rl-item-describer')
 export class ItemDescriberElement extends LitElement {
+  @property({ type: Boolean, attribute: 'global' }) global = false;
   @property({ type: Boolean, attribute: 'show-image' }) showImage = false;
   @property({ attribute: false }) item!: ItemInstance;
   @property({ type: String, attribute: 'rarity', reflect: true })
@@ -111,6 +110,9 @@ export class ItemDescriberElement extends LitElement {
       font-weight: bold;
       text-align: right;
     }
+    dt:first-letter {
+      text-transform: capitalize;
+    }
     dd {
       flex-grow: 1;
       margin: 0;
@@ -121,7 +123,10 @@ export class ItemDescriberElement extends LitElement {
   connectedCallback() {
     // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
-    initializeInstance(this);
+
+    if (this.global) {
+      initializeInstance(this);
+    }
   }
 
   shouldUpdate(changedProperties: Map<string, unknown>) {
@@ -146,18 +151,22 @@ export class ItemDescriberElement extends LitElement {
       const armor: ArmorInstance = this.item;
       const mits = (Object.keys(armor.mitigation) as DamageType[]).sort().map(
         (damageType) =>
-          html`<dt>${ucfirst(damageType)}</dt>
+          html`<dt>${damageType}</dt>
             <dd>${armor.mitigation[damageType]}</dd>`
       );
       info.push(html`<dl>${mits}</dl>`);
     }
 
+    const priceTmpl = html`
+      <dt>Price</dt>
+      <dd><rl-coin coin=${this.item.price}></rl-coin></dd>
+    `;
+
     info.push(html`
       <dl>
         <dt>Weight</dt>
         <dd>${this.item.weight}</dd>
-        <dt>Price</dt>
-        <dd><rl-coin coin=${this.item.price}></rl-coin></dd>
+        ${this.item.price > 0 ? priceTmpl : nothing}
       </dl>
     `);
 

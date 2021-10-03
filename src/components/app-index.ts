@@ -86,7 +86,7 @@ export class AppIndex extends LitElement {
       <footer>
         <span>Copyright and stuff, I guess</span>
       </footer>
-      <rl-item-describer></rl-item-describer>
+      <rl-item-describer global></rl-item-describer>
     `;
   }
 
