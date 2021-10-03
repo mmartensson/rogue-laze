@@ -78,12 +78,13 @@ export class PageProgress extends PageElement {
       <section id="inventory">
         <h1>Inventory</h1>
         <p>Coin: <rl-coin coin=${this.character.coin}></rl-coin></p>
+        <p>Weight: ${inventoryWeight}</p>
+
         <ul id="inventory">
           ${this.character.inventory.map(
             (item) => html` <rl-item .item=${item as any}></rl-item></li> `
           )}
         </ul>
-        <p>Weight: ${inventoryWeight}</p>
       </section>
     `;
   }

@@ -103,12 +103,11 @@ export class ItemDescriberElement extends LitElement {
     }
 
     dl {
-      display: flex;
-      flex-flow: row wrap;
+      display: grid;
+      grid-template-columns: repeat(2, 2fr 1fr);
       font-size: 80%;
     }
     dt {
-      flex-basis: 30%;
       padding: 2px 4px;
       font-weight: bold;
       text-align: right;
@@ -117,9 +116,13 @@ export class ItemDescriberElement extends LitElement {
       text-transform: capitalize;
     }
     dd {
-      flex-grow: 1;
       margin: 0;
       padding: 2px 4px;
+    }
+    dt.sep {
+      font-size: 80%;
+      text-align: center;
+      grid-column: 1 / -1;
     }
   `;
 
@@ -146,18 +149,16 @@ export class ItemDescriberElement extends LitElement {
     // TODO: showImage would add an <rl-item>... clearly we should not add show-image to <rl-item> itself and cause infinite recursion
     // TODO: Maybe we let rl-item render the text-only representation too
 
-    const info: TemplateResult[] = [
-      html`<div class="name">${this.item.name}</div>`,
-    ];
+    const grid: TemplateResult[] = [];
 
     if (isArmorInstance(this.item)) {
       const armor: ArmorInstance = this.item;
       const mits = (Object.keys(armor.mitigation) as DamageType[]).sort().map(
         (damageType) =>
-          html`<dt>${damageType}</dt>
+          html` <dt>${damageType}</dt>
             <dd>${armor.mitigation[damageType]}</dd>`
       );
-      info.push(html`<dl>${mits}</dl>`);
+      grid.push(html`<dt class="sep">Mitigation</dt>`, ...mits);
     }
 
     if (isWeaponInstance(this.item)) {
@@ -169,18 +170,17 @@ export class ItemDescriberElement extends LitElement {
           `
         : nothing;
 
-      info.push(html`
-        <dl>
-          <dt>${base?.damageType}</dt>
-          <dd>
-            d${base?.damageDice}${this.item.damageMod > 0
-              ? '+' + this.item.damageMod
-              : nothing}
-          </dd>
-          ${secondaryDamageTmpl}
-          <dt>Speed</dt>
-          <dd>${this.item.speed}</dd>
-        </dl>
+      grid.push(html`
+        <dt class="sep">Power</dt>
+        <dt>${base?.damageType}</dt>
+        <dd>
+          d${base?.damageDice}${this.item.damageMod > 0
+            ? '+' + this.item.damageMod
+            : nothing}
+        </dd>
+        ${secondaryDamageTmpl}
+        <dt>Speed</dt>
+        <dd>${this.item.speed}</dd>
       `);
     }
 
@@ -189,14 +189,14 @@ export class ItemDescriberElement extends LitElement {
       <dd><rl-coin coin=${this.item.price}></rl-coin></dd>
     `;
 
-    info.push(html`
-      <dl>
-        <dt>Weight</dt>
-        <dd>${this.item.weight}</dd>
-        ${this.item.price > 0 ? priceTmpl : nothing}
-      </dl>
+    grid.push(html`
+      <dt class="sep">General</dt>
+      <dt>Weight</dt>
+      <dd>${this.item.weight}</dd>
+      ${this.item.price > 0 ? priceTmpl : nothing}
     `);
 
-    return info;
+    return html`<div class="name">${this.item.name}</div>
+      <dl>${grid}</dl>`;
   }
 }
