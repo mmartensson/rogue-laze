@@ -48,7 +48,7 @@ export class Game {
     this.t1 = Math.ceil(this.t0 / TICK_MS) * TICK_MS;
     this.lastHandled = 0;
 
-    this.dungeon = new Dungeon(this.prng, 48); // Apparently 48 is some kind of minimum, because it hangs on lower
+    this.dungeon = new Dungeon(this.prng);
   }
 
   scheduledTick(): Promise<TickEvent> {
