@@ -7,6 +7,7 @@ import { MannequinElement } from '../components/rl-mannequin';
 import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
 import '../components/rl-coin';
+import '../components/rl-dungeon';
 import { Dungeon } from '../types/dungeon';
 import { Game } from '../types/game';
 
@@ -35,6 +36,10 @@ export class PageProgress extends PageElement {
 
     rl-mannequin {
       width: 300px;
+    }
+
+    rl-dungeon {
+      width: 512px;
     }
 
     h1 {
@@ -99,6 +104,7 @@ export class PageProgress extends PageElement {
       <section>
         <h1>Dungeon</h1>
         <canvas></canvas>
+        <rl-dungeon .dungeon=${this.game.dungeon}></rl-dungeon>
       </section>
     `;
   }
@@ -142,7 +148,7 @@ export class PageProgress extends PageElement {
       throw new Error('Found no canvas');
     }
 
-    const size = 512;
+    const size = 384;
 
     canvas.width = size;
     canvas.height = size;

@@ -20,7 +20,7 @@ export class Dungeon {
   map_size: number;
   rooms: Room[];
 
-  constructor(prng: PRNG, map_size = 64) {
+  constructor(prng: PRNG, map_size: number) {
     this.map_size = map_size;
     this.map = [];
     this.rooms = [];
@@ -61,7 +61,7 @@ export class Dungeon {
 
     // Clumps all of the rooms up in the north-west corner; does not actually make it look
     // better, but does seem to avoid "islands".
-    this.squashRooms();
+    // this.squashRooms();
 
     // Find corridors/doors between rooms, marking them on the map
     for (let i = 0; i < room_count; i++) {
