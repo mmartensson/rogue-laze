@@ -3,6 +3,7 @@ import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PRNG } from '../helpers/prng';
 import { Character } from './character';
+import { Dungeon } from './dungeon';
 import { MAX_LEVEL } from './equipment';
 
 export const TICK_MS = 5000;
@@ -31,6 +32,7 @@ export interface TickEvent {
 export class Game {
   session: string;
   character: Character;
+  dungeon?: Dungeon;
   prng: PRNG;
   t0: EpochMs; // Exact session start time
   t1: EpochMs; // Time of first tick; after t0 and divisible by TICK_MS
@@ -45,6 +47,8 @@ export class Game {
     this.t0 = fromBase62(session);
     this.t1 = Math.ceil(this.t0 / TICK_MS) * TICK_MS;
     this.lastHandled = 0;
+
+    this.dungeon = new Dungeon(this.prng, 64);
   }
 
   scheduledTick(): Promise<TickEvent> {

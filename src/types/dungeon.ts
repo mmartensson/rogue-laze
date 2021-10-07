@@ -5,9 +5,12 @@
 
 import { PRNG } from '../helpers/prng.js';
 
-export interface Room {
+interface Coordinate {
   x: number;
   y: number;
+}
+
+export interface Room extends Coordinate {
   w: number;
   h: number;
 }
@@ -29,6 +32,7 @@ export class Dungeon {
       }
     }
 
+    // A few limits
     const room_count = prng.between(10, 20);
     const min_size = 5;
     const max_size = 15;
@@ -36,26 +40,33 @@ export class Dungeon {
     for (let i = 0; i < room_count; i++) {
       const room = {} as Room;
 
+      // Creating a randomly sized room anywhere on the map
       room.x = prng.between(1, this.map_size - max_size - 1);
       room.y = prng.between(1, this.map_size - max_size - 1);
       room.w = prng.between(min_size, max_size);
       room.h = prng.between(min_size, max_size);
 
+      // Does it collide with an existing room? If so, discard the attempt.
       if (this.doesCollide(room)) {
+        // FIXME: Cleanup this retry logic
         i--;
         continue;
       }
+      // Make the room slighly smaller; a bit unclear why
       room.w--;
       room.h--;
 
       this.rooms.push(room);
     }
 
+    // Clumps all of the rooms up in the north-west corner; does not actually make it look
+    // better, but does seem to avoid "islands".
     this.squashRooms();
 
+    // Find corridors/doors between rooms, marking them on the map
     for (let i = 0; i < room_count; i++) {
       const roomA = this.rooms[i];
-      const roomB = this.FindClosestRoom(roomA);
+      const roomB = this.findClosestRoom(roomA);
       if (roomB == null) continue;
 
       const pointA = {
@@ -80,6 +91,7 @@ export class Dungeon {
       }
     }
 
+    // Fill out the rooms themselves on the map
     for (let i = 0; i < room_count; i++) {
       const room = this.rooms[i];
       for (let x = room.x; x < room.x + room.w; x++) {
@@ -89,6 +101,7 @@ export class Dungeon {
       }
     }
 
+    // Marking walls around the rooms (probably not something we will need)
     for (let x = 0; x < this.map_size; x++) {
       for (let y = 0; y < this.map_size; y++) {
         if (this.map[x][y] == 1) {
@@ -102,8 +115,8 @@ export class Dungeon {
     }
   }
 
-  FindClosestRoom(room: Room) {
-    const mid = {
+  findClosestRoom(room: Room) {
+    const mid: Coordinate = {
       x: room.x + room.w / 2,
       y: room.y + room.h / 2,
     };
@@ -128,13 +141,14 @@ export class Dungeon {
     return closest;
   }
 
+  // Make a few attempts at moving each room north-west as far as it goes without a collision
   squashRooms() {
     for (let i = 0; i < 10; i++) {
       for (let j = 0; j < this.rooms.length; j++) {
         const room = this.rooms[j];
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          const old_position = {
+          const old_position: Coordinate = {
             x: room.x,
             y: room.y,
           };
@@ -151,7 +165,7 @@ export class Dungeon {
     }
   }
 
-  // ignore is a room index to ignore
+  // Check if the provided room collides with any of the active rooms (optionally ignoring one of them, referenced by index)
   doesCollide(room: Room, ignore?: number) {
     for (let i = 0; i < this.rooms.length; i++) {
       if (i == ignore) continue;

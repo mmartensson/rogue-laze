@@ -74,7 +74,7 @@ export class PageProgress extends PageElement {
       .reduce((p, c) => p + c, 0);
 
     this.updateComplete.then(() => {
-      this.demoDungeon();
+      this.renderDungeon(this.game.dungeon);
     });
 
     return html`
@@ -135,23 +135,26 @@ export class PageProgress extends PageElement {
     return html` <div>Fast forwarding</div> `;
   }
 
-  private demoDungeon() {
-    const dungeon = new Dungeon(this.game.prng, 64);
-    console.log('DUNGEON', dungeon);
-    this.renderDungeon(dungeon);
-  }
-
-  private renderDungeon(dungeon: Dungeon) {
+  private renderDungeon(dungeon?: Dungeon) {
     const canvas = this.shadowRoot?.querySelector('canvas');
+
     if (!canvas) {
       throw new Error('Found no canvas');
     }
 
-    canvas.width = 512;
-    canvas.height = 512;
+    const size = 512;
+
+    canvas.width = size;
+    canvas.height = size;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       throw new Error('Canvas broken');
+    }
+
+    if (!dungeon) {
+      ctx.fillStyle = '#351330';
+      ctx.fillRect(0, 0, size, size);
+      return;
     }
 
     const scale = canvas.width / dungeon.map_size;
