@@ -14,4 +14,8 @@ export class PRNG {
   fraction() {
     return this.alea.random();
   }
+
+  between(low: number, high: number) {
+    return ~~(this.alea.random() * (high - low)) + low;
+  }
 }

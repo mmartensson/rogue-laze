@@ -7,6 +7,7 @@ import { MannequinElement } from '../components/rl-mannequin';
 import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
 import '../components/rl-coin';
+import { Dungeon } from '../types/dungeon';
 import { Game } from '../types/game';
 
 // TODO: Add a nifty mouseover for items, for use on mannequin and in inventory and also in prose with associated items
@@ -72,6 +73,10 @@ export class PageProgress extends PageElement {
       .map((item) => item.weight)
       .reduce((p, c) => p + c, 0);
 
+    this.updateComplete.then(() => {
+      this.demoDungeon();
+    });
+
     return html`
       <section id="character">
         <h1>Character</h1>
@@ -89,6 +94,11 @@ export class PageProgress extends PageElement {
             (item) => html`<li><rl-item .item=${item as any}></rl-item></li>`
           )}
         </ul>
+      </section>
+
+      <section>
+        <h1>Dungeon</h1>
+        <canvas></canvas>
       </section>
     `;
   }
@@ -123,5 +133,37 @@ export class PageProgress extends PageElement {
 
   renderFastForwarding() {
     return html` <div>Fast forwarding</div> `;
+  }
+
+  private demoDungeon() {
+    const dungeon = new Dungeon(this.game.prng, 64);
+    console.log('DUNGEON', dungeon);
+    this.renderDungeon(dungeon);
+  }
+
+  private renderDungeon(dungeon: Dungeon) {
+    const canvas = this.shadowRoot?.querySelector('canvas');
+    if (!canvas) {
+      throw new Error('Found no canvas');
+    }
+
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Canvas broken');
+    }
+
+    const scale = canvas.width / dungeon.map_size;
+
+    for (let y = 0; y < dungeon.map_size; y++) {
+      for (let x = 0; x < dungeon.map_size; x++) {
+        const tile = dungeon.map[x][y];
+        if (tile == 0) ctx.fillStyle = '#351330';
+        else if (tile == 1) ctx.fillStyle = '#64908A';
+        else ctx.fillStyle = '#424254';
+        ctx.fillRect(x * scale, y * scale, scale, scale);
+      }
+    }
   }
 }
