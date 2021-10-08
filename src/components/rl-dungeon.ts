@@ -11,7 +11,6 @@ export class DungeonElement extends LitElement {
   static styles = css`
     :host {
       display: inline-block;
-      border: solid 1px black;
       background-color: #f0f0f0;
     }
   `;
@@ -27,7 +26,7 @@ export class DungeonElement extends LitElement {
     } ${size * 8}">
       <defs>
         <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
-          <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#cfcfcf" stroke-width="1"/>
+          <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#cfcfcf" stroke-width="0.5"/>
         </pattern>
       </defs>
 
@@ -43,7 +42,7 @@ export class DungeonElement extends LitElement {
     return svg`
       <rect x=${room.x * 8} y=${room.y * 8} width=${room.w * 8} height=${
       room.h * 8
-    } fill="rgba(255, 255, 255, 0.7)" stroke="#a9a9a9" shape-rendering="crispEdges" stroke-width="1"></rect>
+    } fill="rgba(255, 255, 255, 0.7)" stroke="#a9a9a9" stroke-width="1"></rect>
     `;
   }
 
@@ -52,7 +51,7 @@ export class DungeonElement extends LitElement {
       (coord) => svg`
       <rect x=${coord.x * 8} y=${
         coord.y * 8
-      } width="8" height="8" fill="rgba(255, 255, 255, 0.7)" stroke="#c0c0c0" shape-rendering="crispEdges" stroke-width="1"></rect>
+      } width="8" height="8" fill="rgba(0, 255, 255, 0.05)" stroke="#a9a9a9" stroke-width="1"></rect>
     `
     );
   }

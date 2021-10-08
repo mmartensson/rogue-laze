@@ -94,7 +94,7 @@ export class Dungeon {
         }
 
         this.map[pointB.x][pointB.y] = 2;
-        corridor.coordinates.push(pointB);
+        corridor.coordinates.push({ ...pointB });
       }
       this.corridors.push(corridor);
     }
