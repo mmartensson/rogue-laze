@@ -163,10 +163,10 @@ export class PageProgress extends PageElement {
       return;
     }
 
-    const scale = canvas.width / dungeon.map_size;
+    const scale = canvas.width / dungeon.mapSize;
 
-    for (let y = 0; y < dungeon.map_size; y++) {
-      for (let x = 0; x < dungeon.map_size; x++) {
+    for (let y = 0; y < dungeon.mapSize; y++) {
+      for (let x = 0; x < dungeon.mapSize; x++) {
         const tile = dungeon.map[x][y];
         if (tile == 0) ctx.fillStyle = '#351330';
         else if (tile == 1) ctx.fillStyle = '#64908A';
