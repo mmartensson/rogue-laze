@@ -7,6 +7,14 @@
 
 import { PRNG } from '../helpers/prng.js';
 
+const ROOM_DIMENSIONS = [
+  [1, 1, 3, 10], // North/South corridor
+  [3, 10, 1, 1], // East/West corridor
+  [2, 4, 2, 4], // Small room
+  [4, 6, 4, 6], // Medium room
+  [6, 10, 6, 10], // Large room
+];
+
 export interface Point {
   x: number;
   y: number;
@@ -19,12 +27,8 @@ export interface Rectangle extends Point {
 
 type Quad = number[];
 
-interface Directions {
-  top: boolean;
-  bottom: boolean;
-  left: boolean;
-  right: boolean;
-}
+type Direction = 'top' | 'bottom' | 'left' | 'right';
+type Directions = Set<Direction>;
 
 export interface Corridor {
   coordinates: Point[];
@@ -32,6 +36,8 @@ export interface Corridor {
 
 // NOTE: A room should really be a collection of rectangles, allowing for irregular shapes; maybe a future consideration
 export interface Room extends Rectangle {
+  index: number;
+
   // Relative or absolute coordinates?
   traps: Point[];
   items: Point[];
@@ -42,12 +48,13 @@ export const relativeDirections = (
   from: Rectangle,
   to: Rectangle
 ): Directions => {
-  return {
-    left: to.x + to.w < from.x,
-    right: from.x + from.w < to.x,
-    bottom: to.y + to.h < from.y,
-    top: from.y + from.h < to.y,
-  };
+  const directions = new Set<Direction>();
+  if (to.x + to.w <= from.x) directions.add('left');
+  if (from.x + from.w <= to.x) directions.add('right');
+  if (to.y + to.h <= from.y) directions.add('top');
+  if (from.y + from.h <= to.y) directions.add('bottom');
+
+  return directions;
 };
 
 export const distance = (
@@ -58,7 +65,7 @@ export const distance = (
 ): number => {
   const a = x2 - x1;
   const b = y2 - y1;
-  return Math.sqrt(a * a + b * b);
+  return Math.abs(Math.sqrt(a * a + b * b));
 };
 
 export const rectangleToQuad = (rect: Rectangle): Quad => {
@@ -66,19 +73,22 @@ export const rectangleToQuad = (rect: Rectangle): Quad => {
 };
 
 export const rectangleDistance = (from: Rectangle, to: Rectangle): number => {
-  const { top, bottom, left, right } = relativeDirections(from, to);
+  const dirs = relativeDirections(from, to);
 
   const [x1, y1, x1b, y1b] = rectangleToQuad(from);
   const [x2, y2, x2b, y2b] = rectangleToQuad(to);
 
-  if (top && left) return distance(x1, y1b, x2b, y2);
-  else if (left && bottom) return distance(x1, y1, x2b, y2b);
-  else if (bottom && right) return distance(x1b, y1, x2, y2b);
-  else if (right && top) return distance(x1b, y1b, x2, y2);
-  else if (left) return x1 - x2b;
-  else if (right) return x2 - x1b;
-  else if (bottom) return y1 - y2b;
-  else if (top) return y2 - y1b;
+  if (dirs.has('top') && dirs.has('left')) return distance(x1, y1b, x2b, y2);
+  else if (dirs.has('left') && dirs.has('bottom'))
+    return distance(x1, y1, x2b, y2b);
+  else if (dirs.has('bottom') && dirs.has('right'))
+    return distance(x1b, y1, x2, y2b);
+  else if (dirs.has('right') && dirs.has('top'))
+    return distance(x1b, y1b, x2, y2);
+  else if (dirs.has('left')) return x1 - x2b;
+  else if (dirs.has('right')) return x2 - x1b;
+  else if (dirs.has('bottom')) return y1 - y2b;
+  else if (dirs.has('top')) return y2 - y1b;
   else return 0;
 };
 
@@ -101,12 +111,9 @@ export class Dungeon {
       }
     }
 
-    // A few limits
-    const maxRooms = prng.between(10, 20);
+    // The maxRooms now also includes corridors, we should break this code out and handle separately
+    const maxRooms = prng.between(20, 30);
     const maxPlacementFailures = prng.between(20, 100);
-
-    const min_size = 2;
-    const max_size = 8;
 
     let placementFailures = 0;
 
@@ -118,11 +125,14 @@ export class Dungeon {
     ) {
       const room = {} as Room;
 
+      const [minWidth, maxWidth, minHeight, maxHeight] =
+        prng.pick(ROOM_DIMENSIONS);
+
       // Creating a randomly sized room anywhere on the map
-      room.x = prng.between(1, this.mapSize - max_size - 1);
-      room.y = prng.between(1, this.mapSize - max_size - 1);
-      room.w = prng.between(min_size, max_size);
-      room.h = prng.between(min_size, max_size);
+      room.w = prng.between(minWidth, maxWidth);
+      room.h = prng.between(minHeight, maxHeight);
+      room.x = prng.between(1, this.mapSize - room.w - 1);
+      room.y = prng.between(1, this.mapSize - room.h - 1);
 
       // Does it collide with an existing room? If so, discard the attempt.
       if (this.collidingRooms(room).length > 0) {
@@ -131,14 +141,16 @@ export class Dungeon {
       }
 
       placementFailures = 0;
+      room.index = this.rooms.length;
       this.rooms.push(room);
 
       if (startRoom) {
         if (
           room.y < startRoom.y ||
           (room.y === startRoom.y && room.h < startRoom.h)
-        )
+        ) {
           startRoom = room;
+        }
       } else {
         startRoom = room;
       }
@@ -194,6 +206,102 @@ export class Dungeon {
       }
       this.corridors.push(corridor);
     });
+
+    this.generateLongCorridors();
+  }
+
+  // FIXME: Over-engineered and silly
+  generateLongCorridors() {
+    const maxCount = 3;
+    let count = 0;
+    const connected = new Set<number>();
+
+    this.rooms.forEach((roomA, indexA) => {
+      this.rooms.forEach((roomB, indexB) => {
+        if (count >= maxCount) return;
+
+        if (indexA === indexB) return;
+
+        if (connected.has(indexA)) return;
+
+        if (connected.has(indexB)) return;
+
+        const [dir, unwanted] = relativeDirections(roomA, roomB);
+        // Not accessible via straight line?
+        if (unwanted) return;
+
+        const dist = ~~rectangleDistance(roomA, roomB);
+        // Not long enough?
+        if (dist < 5) return;
+
+        console.log(`Between ${indexA} and ${indexB}`, dir, dist);
+
+        let rect;
+        switch (dir) {
+          case 'left': {
+            const top = Math.max(roomA.y, roomB.y);
+            // const bottom = Math.min(roomA.y + roomA.h, roomB.y + roomB.h);
+            // ... make multiple attempts of y between top and bottom
+            // ... can probably create a 'span' which is how much we can change,
+            // and a 'coord' which is 'x' or 'y' and have the loop below.
+            const y = top;
+            rect = {
+              x: roomA.x - dist,
+              y,
+              w: dist,
+              h: 1,
+            };
+            break;
+          }
+          case 'right': {
+            const y = Math.max(roomA.y, roomB.y);
+            rect = {
+              x: roomA.x + roomA.w,
+              y,
+              w: dist,
+              h: 1,
+            };
+            break;
+          }
+          case 'top': {
+            const x = Math.max(roomA.x, roomB.x);
+            rect = {
+              x,
+              y: roomA.y - dist,
+              w: 1,
+              h: dist,
+            };
+            break;
+          }
+          case 'bottom': {
+            const x = Math.max(roomA.x, roomB.x);
+            rect = {
+              x,
+              y: roomA.y + roomA.h,
+              w: 1,
+              h: dist,
+            };
+            break;
+          }
+        }
+
+        const collisions = this.collidingRooms(rect);
+        console.log('Collisions', rect, collisions);
+
+        for (let x = rect.x; x < rect.x + rect.w; x++) {
+          for (let y = rect.y; y < rect.y + rect.h; y++) {
+            this.map[x][y] = 3;
+          }
+        }
+
+        connected.add(indexA);
+        connected.add(indexB);
+
+        count++;
+      });
+    });
+
+    console.log('COUNT', count);
   }
 
   closestRoom(rect: Rectangle): Room {
@@ -221,12 +329,7 @@ export class Dungeon {
       // If the rectangle is itself a registered room then it does not collide with itself
       if (room === rect) return false;
 
-      return !(
-        rect.x + rect.w < room.x ||
-        rect.x > room.x + room.w ||
-        rect.y + rect.h < room.y ||
-        rect.y > room.y + room.h
-      );
+      return relativeDirections(rect, room).size == 0;
     });
   }
 }

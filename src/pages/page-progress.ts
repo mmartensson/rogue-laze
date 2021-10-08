@@ -170,7 +170,8 @@ export class PageProgress extends PageElement {
         const tile = dungeon.map[x][y];
         if (tile == 0) ctx.fillStyle = '#351330';
         else if (tile == 1) ctx.fillStyle = '#64908A';
-        else ctx.fillStyle = '#424254';
+        else if (tile == 2) ctx.fillStyle = '#424254';
+        else ctx.fillStyle = '#ff00ff';
         ctx.fillRect(x * scale, y * scale, scale, scale);
       }
     }

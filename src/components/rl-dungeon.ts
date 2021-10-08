@@ -24,6 +24,11 @@ export class DungeonElement extends LitElement {
     <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 ${
       size * 8
     } ${size * 8}">
+      <style>
+        .room-no {
+          font: 8px sans-serif; fill: red;
+        }
+      </style>
       <defs>
         <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
           <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#cfcfcf" stroke-width="0.5"/>
@@ -32,13 +37,13 @@ export class DungeonElement extends LitElement {
 
       <rect x="0" y="0" width="512" height="512" fill="url(#grid)" />
 
-      ${this.dungeon.rooms.map((room) => this.renderRoom(room))}
+      ${this.dungeon.rooms.map((room, index) => this.renderRoom(room, index))}
       ${this.dungeon.corridors.map((corridor) => this.renderCorridor(corridor))}
     </svg>
     `;
   }
 
-  private renderRoom(room: Room) {
+  private renderRoom(room: Room, index: number) {
     const isStart = this.dungeon?.startRoom === room;
     // FIXME: Define colors in svg and reference them
 
@@ -48,9 +53,16 @@ export class DungeonElement extends LitElement {
       : 'rgba(255, 255, 255, 0.7)';
 
     return svg`
-      <rect x=${room.x * 8} y=${room.y * 8} width=${room.w * 8} height=${
+      <g>
+        <rect data-index=${index} x=${room.x * 8} y=${room.y * 8} width=${
+      room.w * 8
+    } height=${
       room.h * 8
     } fill=${fill} stroke="#a9a9a9" stroke-width="1"></rect>
+        <text x=${room.x * 8 + 1} y=${
+      room.y * 8 + 7
+    } class="room-no">${index}</text>
+      </g>
     `;
   }
 
