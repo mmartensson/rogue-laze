@@ -64,15 +64,24 @@ export class Dungeon {
       this.rooms.push(room);
     }
 
-    // Clumps all of the rooms up in the north-west corner; does not actually make it look
-    // better, but does seem to avoid "islands".
-    // this.squashRooms();
+    // Fill out the rooms themselves on the map; allowing easy check if a given coordinate is inside a room
+    // ... but mostly helps with the canvas rendering; we might get rid of the map when that is gone.
+    this.rooms.forEach((room) => {
+      for (let x = room.x; x < room.x + room.w; x++) {
+        for (let y = room.y; y < room.y + room.h; y++) {
+          this.map[x][y] = 1;
+        }
+      }
+    });
 
     // Find corridors/doors between rooms, marking them on the map
-    for (let i = 0; i < room_count; i++) {
-      const roomA = this.rooms[i];
+    this.rooms.forEach((roomA) => {
       const roomB = this.findClosestRoom(roomA);
-      if (roomB == null) continue;
+      if (roomB == null) return;
+
+      // FIXME: Could use a better algorithm for this. Often get two corridors going in parallel.
+      // Wide corridors/hallways are fine, as long as they count as one. We are going to want to
+      // be able to describe rooms and corridors using text.
 
       const pointA: Coordinate = {
         x: prng.between(roomA.x, roomA.x + roomA.w),
@@ -93,21 +102,14 @@ export class Dungeon {
           else pointB.y++;
         }
 
-        this.map[pointB.x][pointB.y] = 2;
-        corridor.coordinates.push({ ...pointB });
-      }
-      this.corridors.push(corridor);
-    }
-
-    // Fill out the rooms themselves on the map
-    for (let i = 0; i < room_count; i++) {
-      const room = this.rooms[i];
-      for (let x = room.x; x < room.x + room.w; x++) {
-        for (let y = room.y; y < room.y + room.h; y++) {
-          this.map[x][y] = 1;
+        const current = this.map[pointB.x][pointB.y];
+        if (current == 0) {
+          this.map[pointB.x][pointB.y] = 2;
+          corridor.coordinates.push({ ...pointB });
         }
       }
-    }
+      this.corridors.push(corridor);
+    });
   }
 
   findClosestRoom(room: Room) {
@@ -134,30 +136,6 @@ export class Dungeon {
       }
     }
     return closest;
-  }
-
-  // Make a few attempts at moving each room north-west as far as it goes without a collision
-  squashRooms() {
-    for (let i = 0; i < 10; i++) {
-      for (let j = 0; j < this.rooms.length; j++) {
-        const room = this.rooms[j];
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-          const old_position: Coordinate = {
-            x: room.x,
-            y: room.y,
-          };
-          if (room.x > 1) room.x--;
-          if (room.y > 1) room.y--;
-          if (room.x == 1 && room.y == 1) break;
-          if (this.doesCollide(room, j)) {
-            room.x = old_position.x;
-            room.y = old_position.y;
-            break;
-          }
-        }
-      }
-    }
   }
 
   // Check if the provided room collides with any of the active rooms (optionally ignoring one of them, referenced by index)
