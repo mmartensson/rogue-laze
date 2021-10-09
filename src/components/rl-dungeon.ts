@@ -11,7 +11,7 @@ export class DungeonElement extends LitElement {
   static styles = css`
     :host {
       display: inline-block;
-      background-color: #f0f0f0;
+      background-color: #999;
     }
   `;
 
@@ -26,7 +26,24 @@ export class DungeonElement extends LitElement {
     } ${size * 8}">
       <style>
         .room-no {
-          font: 8px sans-serif; fill: red;
+          font: 6px sans-serif;
+          fill: white;
+        }
+        .room {
+          fill: hsl(200,100%,60%);
+          stroke: hsl(200,100%,80%);
+          stroke-width: 1;
+        }
+        .connection {
+          fill: hsl(200,100%,60%);
+        }
+        .connection-wall {
+          stroke: hsl(200,100%,80%);
+          stroke-width: 1;
+        }
+        .connection-symbol {
+          stroke: hsl(200,100%,30%);
+          stroke-width: 1;
         }
       </style>
       <defs>
@@ -35,39 +52,71 @@ export class DungeonElement extends LitElement {
         </pattern>
       </defs>
 
-      <rect x="0" y="0" width="512" height="512" fill="url(#grid)" />
-
       ${this.dungeon.rooms.map((room, index) => this.renderRoom(room, index))}
+
+      <rect x="0" y="0" width="512" height="512" fill="url(#grid)" />
     </svg>
     `;
   }
 
   private renderRoom(room: Room, index: number) {
-    const isStart = this.dungeon?.startingRoom === room;
-    // FIXME: Define colors in svg and reference them
-
-    // NOTE: Currently marking the starting room; going forward we should be marking the current room; possibly doing a trivial fog-of-war
-    const fill = isStart
-      ? 'rgba(128, 255, 0, 0.3)'
-      : 'rgba(255, 255, 255, 0.7)';
-
     const connections = room.connections.map((conn) => {
-      return svg`
-        <rect x=${conn.point.x * 8} y=${
-        conn.point.y * 8
-      } width=8 height=8></rect>
+      if (conn.direction == 'east' || conn.direction == 'west') {
+        return svg`
+          <g>
+            <rect class="connection" x=${conn.point.x * 8 - 1} y=${
+          conn.point.y * 8 + 1
+        } width=10 height=6></rect>
+
+            <line class="connection-wall" x1=${conn.point.x * 8} y1=${
+          conn.point.y * 8 + 0.5
+        }
+            x2=${conn.point.x * 8 + 8} y2=${conn.point.y * 8 + 0.5}></line>
+
+            <line class="connection-wall" x1=${conn.point.x * 8} y1=${
+          conn.point.y * 8 + 7.5
+        }
+            x2=${conn.point.x * 8 + 8} y2=${conn.point.y * 8 + 7.5}></line>
+
+            <line class="connection-symbol" x1=${conn.point.x * 8 + 4} y1=${
+          conn.point.y * 8
+        }
+            x2=${conn.point.x * 8 + 4} y2=${conn.point.y * 8 + 8}></line>
+          </g>
       `;
+      } else {
+        return svg`
+          <g>
+            <rect class="connection" x=${conn.point.x * 8 + 1} y=${
+          conn.point.y * 8 - 1
+        } width=6 height=10></rect>
+
+            <line class="connection-wall" x1=${conn.point.x * 8 + 0.5} y1=${
+          conn.point.y * 8
+        }
+            x2=${conn.point.x * 8 + 0.5} y2=${conn.point.y * 8 + 8}></line>
+
+            <line class="connection-wall" x1=${conn.point.x * 8 + 7.5} y1=${
+          conn.point.y * 8
+        }
+            x2=${conn.point.x * 8 + 7.5} y2=${conn.point.y * 8 + 8}></line>
+
+            <line class="connection-symbol" x1=${conn.point.x * 8} y1=${
+          conn.point.y * 8 + 4
+        }
+            x2=${conn.point.x * 8 + 8} y2=${conn.point.y * 8 + 4}></line>
+          </g>
+      `;
+      }
     });
 
     return svg`
       <g>
-        <rect data-index=${index} x=${room.x * 8} y=${room.y * 8} width=${
-      room.w * 8
-    } height=${
-      room.h * 8
-    } fill=${fill} stroke="#a9a9a9" stroke-width="1"></rect>
+        <rect data-index=${index} class="room" x=${room.x * 8 + 0.5} y=${
+      room.y * 8 + 0.5
+    } width=${room.w * 8 - 1} height=${room.h * 8 - 1}></rect>
         <text x=${room.x * 8 + 1} y=${
-      room.y * 8 + 7
+      room.y * 8 + 6
     } class="room-no">${index}</text>
         ${connections}
       </g>

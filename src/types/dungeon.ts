@@ -221,7 +221,7 @@ export class Dungeon {
     let room = this.rooms[startIndex];
 
     let failures = 0;
-    while (failures < 100) {
+    while (failures < 5) {
       const direction = prng.pick(DIRECTIONS);
       let point: Point;
 
@@ -275,7 +275,9 @@ export class Dungeon {
       }
     }
 
-    console.log('ROOMS', this.rooms);
+    if (startIndex < this.rooms.length - 1) {
+      this.generateRooms(startIndex + 1);
+    }
   }
 
   attemptRoom(connection: Connection) {
@@ -283,7 +285,7 @@ export class Dungeon {
 
     const room = { connections: [connection] } as Room;
 
-    for (let attempt = 0; attempt < 10; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       const [minWidth, maxWidth, minHeight, maxHeight] =
         prng.pick(ROOM_DIMENSIONS);
 
