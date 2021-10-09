@@ -3,7 +3,7 @@ import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PRNG } from '../helpers/prng';
 import { Character } from './character';
-import { Dungeon } from './dungeon';
+import { Connection, Dungeon, facingConnection } from './dungeon';
 import { MAX_LEVEL } from './equipment';
 
 export const TICK_MS = 5000;
@@ -128,6 +128,39 @@ export class Game {
           // Walk to the entity (keeping it to ensure it is still rendered)
           this.dungeon.location = { x: entity.x, y: entity.y };
           room.entities.unshift(entity);
+        }
+      } else {
+        const arrived = room.connections.find((c) => {
+          const f = facingConnection(c);
+          return f.x == x && f.y == y;
+        });
+        let destination: Connection | undefined = undefined;
+
+        // FIXME: Okay, we need to have some actual state in Game; the 'arrived' code means the
+        // character will walk back and forth through the first connection, never getting anywhere
+        // unless there is an entity in the room to distract it.
+
+        if (arrived) {
+          if (arrived.room === 'exit') {
+            // I guess we are leaving? FIXME: Figure this out
+          } else {
+            destination = arrived.room.connections.find(
+              (c) => c.x == arrived.x && c.y == arrived.y
+            );
+          }
+        } else {
+          const unvisited = room.connections.find(
+            (c) => c.room != 'exit' && !c.room.visited
+          );
+          if (unvisited) {
+            destination = unvisited;
+          } else {
+            destination = this.prng.pick(room.connections);
+          }
+        }
+
+        if (destination) {
+          this.dungeon.location = facingConnection(destination);
         }
       }
     }
