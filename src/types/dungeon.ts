@@ -160,6 +160,20 @@ export class Dungeon {
     });
   }
 
+  collidingConnections(rect: Rectangle) {
+    return this.rooms
+      .flatMap((room) => room.connections)
+      .filter((conn) => {
+        const { x, y } = conn.point;
+        return (
+          x >= rect.x &&
+          x <= rect.x + rect.w &&
+          y >= rect.y &&
+          y <= rect.y + rect.h
+        );
+      });
+  }
+
   startGeneration() {
     const { prng } = this;
     const startingDirection = prng.pick(DIRECTIONS);
@@ -207,7 +221,7 @@ export class Dungeon {
     let room = this.rooms[startIndex];
 
     let failures = 0;
-    while (failures < 100 && this.rooms.length < 30) {
+    while (failures < 100) {
       const direction = prng.pick(DIRECTIONS);
       let point: Point;
 
@@ -303,9 +317,16 @@ export class Dungeon {
         room.x < 0 ||
         room.y < 0 ||
         room.x + room.w >= this.mapSize ||
-        room.y + room.w >= this.mapSize
-      )
+        room.y + room.h >= this.mapSize
+      ) {
+        // Outside the map
         continue;
+      }
+
+      if (this.collidingConnections(room).length > 0) {
+        // Was a connection inside it
+        return null;
+      }
 
       if (this.collidingRooms(room).length == 0) {
         return room;
