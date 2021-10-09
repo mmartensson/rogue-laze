@@ -31,7 +31,7 @@ export class DungeonElement extends LitElement {
       </style>
       <defs>
         <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
-          <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#cfcfcf" stroke-width="0.5"/>
+          <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#000" stroke-width="0.5"/>
         </pattern>
       </defs>
 

@@ -166,16 +166,22 @@ export class Dungeon {
     let startingPoint: Point;
     switch (startingDirection) {
       case 'north':
-        startingPoint = { y: 0, x: prng.between(0, this.mapSize) };
+        startingPoint = { y: 0, x: prng.between(0, this.mapSize - 1) };
         break;
       case 'south':
-        startingPoint = { y: this.mapSize, x: prng.between(0, this.mapSize) };
+        startingPoint = {
+          y: this.mapSize - 1,
+          x: prng.between(0, this.mapSize - 1),
+        };
         break;
       case 'west':
         startingPoint = { x: 0, y: prng.between(0, this.mapSize) };
         break;
       case 'east':
-        startingPoint = { x: this.mapSize, y: prng.between(0, this.mapSize) };
+        startingPoint = {
+          x: this.mapSize - 1,
+          y: prng.between(0, this.mapSize - 1),
+        };
         break;
     }
 
@@ -220,7 +226,7 @@ export class Dungeon {
           break;
         case 'east':
           point = {
-            x: room.x + room.w + 1,
+            x: room.x + room.w,
             y: prng.between(room.y, room.y + room.h),
           };
           break;
@@ -269,7 +275,7 @@ export class Dungeon {
       switch (connection.direction) {
         case 'south':
           room.x = prng.between(cpx - room.w + 1, cpx + room.w - 1);
-          room.y = connection.point.y - room.h - 1;
+          room.y = connection.point.y - room.h;
           break;
         case 'north':
           room.x = prng.between(cpx - room.w + 1, cpx + room.w - 1);
@@ -277,7 +283,7 @@ export class Dungeon {
           break;
         case 'east':
           room.y = prng.between(cpy - room.h + 1, cpy + room.h - 1);
-          room.x = connection.point.x - room.w - 1;
+          room.x = connection.point.x - room.w;
           break;
         case 'west':
           room.y = prng.between(cpy - room.h + 1, cpy + room.h - 1);
