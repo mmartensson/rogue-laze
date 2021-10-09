@@ -113,6 +113,25 @@ export class Game {
       summary = 'minor-success';
     }
 
+    if (this.dungeon) {
+      const { x, y } = this.dungeon.location;
+
+      // FIXME: Clearly there are more efficient ways of keeping track of the current room
+      const [room] = this.dungeon.collidingRooms({ x, y, w: 1, h: 1 });
+
+      // First eat all of the pills... uhm... I mean step into all of the traps and loot all of the stuff
+      const entity = room.entities.shift();
+      if (entity) {
+        if (x == entity.x && y === entity.y) {
+          // We are currently on top of the entity... maybe do something fancy
+        } else {
+          // Walk to the entity (keeping it to ensure it is still rendered)
+          this.dungeon.location = { x: entity.x, y: entity.y };
+          room.entities.unshift(entity);
+        }
+      }
+    }
+
     const current = ++this.lastHandled;
     return {
       summary,

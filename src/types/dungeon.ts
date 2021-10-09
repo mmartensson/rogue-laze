@@ -84,6 +84,7 @@ export interface Room extends Rectangle {
   index: number;
   connections: Connection[];
   entities: Entity[];
+  visited: boolean;
 }
 
 export const relativeDirections = (
@@ -134,6 +135,20 @@ export const rectangleDistance = (from: Rectangle, to: Rectangle): number => {
   else return 0;
 };
 
+export const facingConnection = (connection: Connection): Point => {
+  const { x, y } = connection;
+  switch (connection.direction) {
+    case 'north':
+      return { x, y: y + 1 };
+    case 'south':
+      return { x, y: y - 1 };
+    case 'west':
+      return { x: x + 1, y };
+    case 'east':
+      return { x: x - 1, y };
+  }
+};
+
 export class Dungeon {
   mapSize = 20;
   prng: PRNG;
@@ -146,9 +161,7 @@ export class Dungeon {
     this.rooms = [];
 
     this.startGeneration();
-
-    const { x, y } = this.startingConnection;
-    this.location = { x, y };
+    this.location = facingConnection(this.startingConnection);
   }
 
   get startingRoom() {
