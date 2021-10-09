@@ -38,11 +38,10 @@ export interface Rectangle extends Point {
 
 type Quad = number[];
 
-export type Direction = 'north' | 'south' | 'west' | 'east';
+const DIRECTIONS_BASE = ['north', 'south', 'west', 'east'] as const;
+export type Direction = typeof DIRECTIONS_BASE[number];
 export type Directions = Set<Direction>;
-
-// FIXME: Should be a typescript-y way of creating Direction based on the strings in the DIRECTIONS array
-export const DIRECTIONS: Direction[] = ['north', 'south', 'west', 'east'];
+export const DIRECTIONS = DIRECTIONS_BASE as never as Direction[];
 
 export const inverseDirection = (direction: Direction): Direction => {
   switch (direction) {
@@ -57,13 +56,14 @@ export const inverseDirection = (direction: Direction): Direction => {
   }
 };
 
-export type ConnectionType = 'passage' | 'door' | 'locked-door';
-
-export const CONNECTION_TYPES: ConnectionType[] = [
+export const CONNECTION_TYPES_BASE = [
   'passage',
   'door',
   'locked-door',
-];
+] as const;
+export type ConnectionType = typeof CONNECTION_TYPES_BASE[number];
+export const CONNECTION_TYPES =
+  CONNECTION_TYPES_BASE as never as ConnectionType[];
 
 export interface Connection extends Point {
   room: Room | 'exit';
@@ -71,9 +71,9 @@ export interface Connection extends Point {
   direction: Direction;
 }
 
-export type EntityType = 'trap' | 'loot' | 'enemy';
-
-export const ENTITY_TYPES: EntityType[] = ['trap', 'loot', 'enemy'];
+export const ENTITY_TYPES_BASE = ['trap', 'loot', 'enemy'] as const;
+export type EntityType = typeof ENTITY_TYPES_BASE[number];
+export const ENTITY_TYPES = ENTITY_TYPES_BASE as never as EntityType[];
 
 export interface Entity extends Point {
   type: EntityType;
@@ -139,13 +139,24 @@ export class Dungeon {
   prng: PRNG;
 
   rooms: Room[];
-  startingRoom!: Room;
+  location: Point;
 
   constructor(prng: PRNG) {
     this.prng = prng;
     this.rooms = [];
 
     this.startGeneration();
+
+    const { x, y } = this.startingConnection;
+    this.location = { x, y };
+  }
+
+  get startingRoom() {
+    return this.rooms[0];
+  }
+
+  get startingConnection() {
+    return this.startingRoom.connections[0];
   }
 
   collidingRooms(rect: Rectangle) {
@@ -206,7 +217,6 @@ export class Dungeon {
 
     if (!startingRoom) throw new Error('Failed to create starting room');
 
-    this.startingRoom = startingRoom;
     this.rooms.push(startingRoom);
 
     this.generateRooms(0);
@@ -344,7 +354,6 @@ export class Dungeon {
           type,
         });
       });
-      console.log('ent', room.entities);
 
       return room;
     }

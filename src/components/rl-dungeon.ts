@@ -2,17 +2,16 @@
 import { LitElement, customElement, property, css } from 'lit-element';
 import { nothing, svg } from 'lit-html';
 
-import { Dungeon, Point, Room } from '../types/dungeon';
+import { Dungeon, Room } from '../types/dungeon';
 
 @customElement('rl-dungeon')
 export class DungeonElement extends LitElement {
   @property({ attribute: false }) dungeon?: Dungeon;
-  @property({ attribute: false }) location!: Point;
 
   static styles = css`
     :host {
-      --room-hue: 260;
-      --room-sat: 80%;
+      --room-hue: 240;
+      --room-sat: 30%;
 
       --loot-hue: 100;
       --trap-hue: 400;
@@ -90,8 +89,6 @@ export class DungeonElement extends LitElement {
   `;
 
   render() {
-    const { dungeon, location: character } = this;
-
     if (!this.dungeon) return nothing;
 
     const size = this.dungeon.mapSize;
@@ -112,8 +109,8 @@ export class DungeonElement extends LitElement {
       size * 8
     } fill="url(#grid)" />
 
-      <circle id="character" cx=${character.x * 8 + 4} cy=${
-      character.y * 8 + 4
+      <circle id="character" cx=${this.dungeon.location.x * 8 + 4} cy=${
+      this.dungeon.location.y * 8 + 4
     } r=1></circle>
     </svg>
     `;

@@ -2,12 +2,13 @@
 /* eslint-disable import/extensions */
 import { html, css, customElement, state, query } from 'lit-element';
 
-import '../components/rl-mannequin';
-import { MannequinElement } from '../components/rl-mannequin';
+import type { DungeonElement } from '../components/rl-dungeon';
+import type { MannequinElement } from '../components/rl-mannequin';
 import { PageElement } from '../helpers/page-element';
+import '../components/rl-mannequin';
+import '../components/rl-dungeon';
 import '../components/rl-item';
 import '../components/rl-coin';
-import '../components/rl-dungeon';
 import { Game } from '../types/game';
 
 // TODO: Add a nifty mouseover for items, for use on mannequin and in inventory and also in prose with associated items
@@ -19,6 +20,7 @@ export class PageProgress extends PageElement {
   @state() private fastForwarding = false;
 
   @query('rl-mannequin') private mannequin?: MannequinElement;
+  @query('rl-dungeon') private dungeon?: DungeonElement;
 
   static styles = css`
     :host {
@@ -134,6 +136,7 @@ export class PageProgress extends PageElement {
     } else {
       this.requestUpdate();
       this.mannequin?.requestUpdate();
+      this.dungeon?.requestUpdate();
     }
   }
 
