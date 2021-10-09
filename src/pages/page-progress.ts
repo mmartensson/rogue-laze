@@ -8,7 +8,6 @@ import { PageElement } from '../helpers/page-element';
 import '../components/rl-item';
 import '../components/rl-coin';
 import '../components/rl-dungeon';
-import { Dungeon } from '../types/dungeon';
 import { Game } from '../types/game';
 
 // TODO: Add a nifty mouseover for items, for use on mannequin and in inventory and also in prose with associated items
@@ -26,6 +25,9 @@ export class PageProgress extends PageElement {
       background-color: #668;
       display: flex;
       flex-direction: row;
+
+      width: 100%;
+      height: 100%;
     }
 
     section {
@@ -39,7 +41,7 @@ export class PageProgress extends PageElement {
     }
 
     rl-dungeon {
-      width: 512px;
+      width: 720px;
     }
 
     h1 {
@@ -80,12 +82,10 @@ export class PageProgress extends PageElement {
 
     return html`
       <section id="character">
-        <h1>Character</h1>
         <rl-mannequin .character=${this.character}></rl-mannequin>
       </section>
 
       <section id="inventory">
-        <h1>Inventory</h1>
         <p>Coin: <rl-coin coin=${this.character.coin}></rl-coin></p>
         <p>Weight: ${inventoryWeight}</p>
         <p>Tick: ${this.game.lastHandled}</p>
@@ -97,9 +97,14 @@ export class PageProgress extends PageElement {
         </ul>
       </section>
 
-      <section>
-        <h1>Dungeon</h1>
-        <rl-dungeon .dungeon=${this.game.dungeon}></rl-dungeon>
+      <section style="flex: 1">
+        <rl-dungeon
+          .dungeon=${this.game.dungeon}
+          .location=${{
+            x: this.game.dungeon?.startingRoom.x,
+            y: this.game.dungeon?.startingRoom.y,
+          }}
+        ></rl-dungeon>
       </section>
     `;
   }

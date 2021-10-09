@@ -2,25 +2,35 @@
 import { LitElement, customElement, property, css } from 'lit-element';
 import { nothing, svg } from 'lit-html';
 
-import { Dungeon, Room } from '../types/dungeon';
+import { Dungeon, Point, Room } from '../types/dungeon';
 
 @customElement('rl-dungeon')
 export class DungeonElement extends LitElement {
   @property({ attribute: false }) dungeon?: Dungeon;
+  @property({ attribute: false }) location!: Point;
 
   static styles = css`
     :host {
-      --room-hue: 200;
+      --room-hue: 260;
+      --room-sat: 80%;
+
       --loot-hue: 100;
       --trap-hue: 400;
       --enemy-hue: 370;
 
       display: inline-block;
-      background-color: #333;
+      background-color: rgb(36, 41, 46);
+      padding: 20px;
+      border-radius: 10px;
     }
+
+    svg {
+      max-height: 100%;
+    }
+
     svg .room {
-      fill: hsl(var(--room-hue), 100%, 60%);
-      stroke: hsl(var(--room-hue), 100%, 80%);
+      fill: hsl(var(--room-hue), var(--room-sat), 60%);
+      stroke: hsl(var(--room-hue), var(--room-sat), 80%);
       stroke-width: 1;
     }
     svg .room-no {
@@ -28,14 +38,14 @@ export class DungeonElement extends LitElement {
       fill: white;
     }
     svg .connection {
-      fill: hsl(var(--room-hue), 100%, 60%);
+      fill: hsl(var(--room-hue), var(--room-sat), 60%);
     }
     svg .connection-wall {
-      stroke: hsl(var(--room-hue), 100%, 80%);
+      stroke: hsl(var(--room-hue), var(--room-sat), 80%);
       stroke-width: 1;
     }
     svg .connection-symbol {
-      stroke: hsl(var(--room-hue), 100%, 30%);
+      stroke: hsl(var(--room-hue), var(--room-sat), 30%);
       stroke-width: 1;
     }
     svg .entity-loot,
@@ -75,10 +85,13 @@ export class DungeonElement extends LitElement {
       stroke-width: 2;
       fill: none;
       animation: wakawaka 0.15s linear infinite alternate;
+      transition: cx 1s linear, cy 1s linear 2s;
     }
   `;
 
   render() {
+    const { dungeon, location: character } = this;
+
     if (!this.dungeon) return nothing;
 
     const size = this.dungeon.mapSize;
@@ -95,7 +108,13 @@ export class DungeonElement extends LitElement {
 
       ${this.dungeon.rooms.map((room, index) => this.renderRoom(room, index))}
 
-      <rect x="0" y="0" width="512" height="512" fill="url(#grid)" />
+      <rect x="0" y="0" width=${size * 8} height=${
+      size * 8
+    } fill="url(#grid)" />
+
+      <circle id="character" cx=${character.x * 8 + 4} cy=${
+      character.y * 8 + 4
+    } r=1></circle>
     </svg>
     `;
   }
@@ -158,14 +177,6 @@ export class DungeonElement extends LitElement {
       } r=1></circle>
       `;
     });
-
-    if (this.dungeon?.startingRoom === room) {
-      entities.push(svg`
-        <circle id="character" cx=${room.x * 8 + 4} cy=${
-        room.y * 8 + 4
-      } r=1></circle>
-      `);
-    }
 
     return svg`
       <g>
