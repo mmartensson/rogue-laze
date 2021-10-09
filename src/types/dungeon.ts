@@ -207,7 +207,7 @@ export class Dungeon {
     let room = this.rooms[startIndex];
 
     let failures = 0;
-    while (failures < 100 && this.rooms.length < 5) {
+    while (failures < 100 && this.rooms.length < 30) {
       const direction = prng.pick(DIRECTIONS);
       let point: Point;
 
@@ -230,6 +230,12 @@ export class Dungeon {
             y: prng.between(room.y, room.y + room.h),
           };
           break;
+      }
+
+      if (this.collidingRooms({ ...point, w: 1, h: 1 }).length > 0) {
+        // Point is inside an existing room. Should also maybe check if there is an existing connection at the point
+        failures++;
+        continue;
       }
 
       const type = prng.pick(CONNECTION_TYPES);
@@ -273,31 +279,33 @@ export class Dungeon {
       const [cpx, cpy] = [connection.point.x, connection.point.y];
 
       switch (connection.direction) {
-        case 'south':
-          room.x = prng.between(cpx - room.w + 1, cpx + room.w - 1);
-          room.y = connection.point.y - room.h;
-          break;
         case 'north':
-          room.x = prng.between(cpx - room.w + 1, cpx + room.w - 1);
+          room.x = prng.between(cpx - room.w + 1, cpx);
           room.y = connection.point.y + 1;
           break;
-        case 'east':
-          room.y = prng.between(cpy - room.h + 1, cpy + room.h - 1);
-          room.x = connection.point.x - room.w;
+        case 'south':
+          room.x = prng.between(cpx - room.w + 1, cpx);
+          room.y = connection.point.y - room.h;
           break;
         case 'west':
-          room.y = prng.between(cpy - room.h + 1, cpy + room.h - 1);
+          room.y = prng.between(cpy - room.h + 1, cpy);
           room.x = connection.point.x + 1;
           break;
+        case 'east':
+          room.y = prng.between(cpy - room.h + 1, cpy);
+          room.x = connection.point.x - room.w;
+          break;
       }
+
+      console.log('Attempting to place', room);
 
       if (
         room.x < 0 ||
         room.y < 0 ||
-        room.x + room.w > this.mapSize ||
-        room.y + room.w > this.mapSize
+        room.x + room.w >= this.mapSize ||
+        room.y + room.w >= this.mapSize
       )
-        return null;
+        continue;
 
       if (this.collidingRooms(room).length == 0) {
         return room;
