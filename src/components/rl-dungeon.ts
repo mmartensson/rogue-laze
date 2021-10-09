@@ -10,8 +10,71 @@ export class DungeonElement extends LitElement {
 
   static styles = css`
     :host {
+      --room-hue: 200;
+      --loot-hue: 100;
+      --trap-hue: 400;
+      --enemy-hue: 370;
+
       display: inline-block;
-      background-color: #999;
+      background-color: #333;
+    }
+    svg .room {
+      fill: hsl(var(--room-hue), 100%, 60%);
+      stroke: hsl(var(--room-hue), 100%, 80%);
+      stroke-width: 1;
+    }
+    svg .room-no {
+      font: 6px sans-serif;
+      fill: white;
+    }
+    svg .connection {
+      fill: hsl(var(--room-hue), 100%, 60%);
+    }
+    svg .connection-wall {
+      stroke: hsl(var(--room-hue), 100%, 80%);
+      stroke-width: 1;
+    }
+    svg .connection-symbol {
+      stroke: hsl(var(--room-hue), 100%, 30%);
+      stroke-width: 1;
+    }
+    svg .entity-loot,
+    svg .entity-trap,
+    svg .entity-enemy {
+      stroke: black;
+      stroke-width: 0.1;
+    }
+    svg .entity-loot {
+      fill: hsl(var(--loot-hue), 100%, 60%);
+    }
+    svg .entity-trap {
+      fill: hsl(var(--trap-hue), 100%, 60%);
+    }
+    svg .entity-enemy {
+      fill: hsl(var(--enemy-hue), 100%, 30%);
+    }
+    svg #grid {
+      stroke: rgba(0, 0, 0, 0.1);
+      stroke-width: 0.5;
+      fill: none;
+    }
+
+    @keyframes wakawaka {
+      from {
+        stroke-dasharray: 6.28, 4;
+        stroke-dashoffset: 0;
+      }
+      to {
+        stroke-dasharray: 5, 4;
+        stroke-dashoffset: -0.6;
+      }
+    }
+
+    svg #character {
+      stroke: yellow;
+      stroke-width: 2;
+      fill: none;
+      animation: wakawaka 0.15s linear infinite alternate;
     }
   `;
 
@@ -24,40 +87,9 @@ export class DungeonElement extends LitElement {
     <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 ${
       size * 8
     } ${size * 8}">
-      <style>
-        .room-no {
-          font: 6px sans-serif;
-          fill: white;
-        }
-        .room {
-          fill: hsl(200,100%,60%);
-          stroke: hsl(200,100%,80%);
-          stroke-width: 1;
-        }
-        .connection {
-          fill: hsl(200,100%,60%);
-        }
-        .connection-wall {
-          stroke: hsl(200,100%,80%);
-          stroke-width: 1;
-        }
-        .connection-symbol {
-          stroke: hsl(200,100%,30%);
-          stroke-width: 1;
-        }
-        .entity-loot {
-          fill: hsl(100,100%,60%);
-        }
-        .entity-trap {
-          fill: hsl(400,100%,60%);
-        }
-        .entity-enemy {
-          fill: hsl(370,100%,30%);
-        }
-      </style>
       <defs>
         <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
-          <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#000" stroke-width="0.5"/>
+          <path d="M 8 0 L 0 0 0 8" />
         </pattern>
       </defs>
 
@@ -126,6 +158,14 @@ export class DungeonElement extends LitElement {
       } r=1></circle>
       `;
     });
+
+    if (this.dungeon?.startingRoom === room) {
+      entities.push(svg`
+        <circle id="character" cx=${room.x * 8 + 4} cy=${
+        room.y * 8 + 4
+      } r=1></circle>
+      `);
+    }
 
     return svg`
       <g>
