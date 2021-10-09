@@ -78,10 +78,6 @@ export class PageProgress extends PageElement {
       .map((item) => item.weight)
       .reduce((p, c) => p + c, 0);
 
-    this.updateComplete.then(() => {
-      this.renderDungeon(this.game.dungeon);
-    });
-
     return html`
       <section id="character">
         <h1>Character</h1>
@@ -103,7 +99,6 @@ export class PageProgress extends PageElement {
 
       <section>
         <h1>Dungeon</h1>
-        <canvas></canvas>
         <rl-dungeon .dungeon=${this.game.dungeon}></rl-dungeon>
       </section>
     `;
@@ -139,41 +134,5 @@ export class PageProgress extends PageElement {
 
   renderFastForwarding() {
     return html` <div>Fast forwarding</div> `;
-  }
-
-  private renderDungeon(dungeon?: Dungeon) {
-    const canvas = this.shadowRoot?.querySelector('canvas');
-
-    if (!canvas) {
-      throw new Error('Found no canvas');
-    }
-
-    const size = 384;
-
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      throw new Error('Canvas broken');
-    }
-
-    if (!dungeon) {
-      ctx.fillStyle = '#351330';
-      ctx.fillRect(0, 0, size, size);
-      return;
-    }
-
-    const scale = canvas.width / dungeon.mapSize;
-
-    for (let y = 0; y < dungeon.mapSize; y++) {
-      for (let x = 0; x < dungeon.mapSize; x++) {
-        const tile = dungeon.map[x][y];
-        if (tile == 0) ctx.fillStyle = '#351330';
-        else if (tile == 1) ctx.fillStyle = '#64908A';
-        else if (tile == 2) ctx.fillStyle = '#424254';
-        else ctx.fillStyle = '#ff00ff';
-        ctx.fillRect(x * scale, y * scale, scale, scale);
-      }
-    }
   }
 }

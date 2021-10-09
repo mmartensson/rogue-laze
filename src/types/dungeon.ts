@@ -54,10 +54,6 @@ export const inverseDirection = (direction: Direction): Direction => {
   }
 };
 
-export interface Corridor {
-  coordinates: Point[];
-}
-
 export type ConnectionType = 'passage' | 'door' | 'locked-door';
 
 export const CONNECTION_TYPES: ConnectionType[] = [
@@ -138,14 +134,12 @@ export class Dungeon {
 
   map: number[][];
   rooms: Room[];
-  corridors: Corridor[];
-  startingRoom: Room;
+  startingRoom!: Room;
 
   constructor(prng: PRNG) {
     this.prng = prng;
     this.map = [];
     this.rooms = [];
-    this.corridors = [];
 
     for (let x = 0; x < this.mapSize; x++) {
       this.map[x] = [];
@@ -154,108 +148,7 @@ export class Dungeon {
       }
     }
 
-    this.placeStartingRoom();
-
-    // The maxRooms now also includes corridors, we should break this code out and handle separately
-    const maxRooms = prng.between(20, 30);
-    const maxPlacementFailures = prng.between(20, 100);
-
-    let placementFailures = 0;
-
-    while (
-      this.rooms.length <= maxRooms &&
-      placementFailures < maxPlacementFailures
-    ) {
-      const room = {} as Room;
-
-      room.connections = [];
-
-      const [minWidth, maxWidth, minHeight, maxHeight] =
-        prng.pick(ROOM_DIMENSIONS);
-
-      // Creating a randomly sized room anywhere on the map
-      room.w = prng.between(minWidth, maxWidth);
-      room.h = prng.between(minHeight, maxHeight);
-      room.x = prng.between(1, this.mapSize - room.w - 1);
-      room.y = prng.between(1, this.mapSize - room.h - 1);
-
-      // Does it collide with an existing room? If so, discard the attempt.
-      if (this.collidingRooms(room).length > 0) {
-        placementFailures++;
-        continue;
-      }
-
-      placementFailures = 0;
-      room.index = this.rooms.length;
-      this.rooms.push(room);
-    }
-
-    // Fill out the rooms themselves on the map; allowing easy check if a given coordinate is inside a room
-    // ... but mostly helps with the canvas rendering; we might get rid of the map when that is gone.
-    this.rooms.forEach((room) => {
-      for (let x = room.x; x < room.x + room.w; x++) {
-        for (let y = room.y; y < room.y + room.h; y++) {
-          this.map[x][y] = 1;
-        }
-      }
-    });
-
-    // Find corridors/doors between rooms, marking them on the map
-    this.rooms.forEach((roomA) => {
-      const roomB = this.closestRoom(roomA);
-      if (roomB == null) return;
-
-      // FIXME: Could use a better algorithm for this. Often get two corridors going in parallel.
-      // Wide corridors/hallways are fine, as long as they count as one. We are going to want to
-      // be able to describe rooms and corridors using text.
-
-      const pointA: Point = {
-        x: prng.between(roomA.x, roomA.x + roomA.w),
-        y: prng.between(roomA.y, roomA.y + roomA.h),
-      };
-      const pointB: Point = {
-        x: prng.between(roomB.x, roomB.x + roomB.w),
-        y: prng.between(roomB.y, roomB.y + roomB.h),
-      };
-
-      const corridor: Corridor = { coordinates: [] };
-      while (pointB.x != pointA.x || pointB.y != pointA.y) {
-        if (pointB.x != pointA.x) {
-          if (pointB.x > pointA.x) pointB.x--;
-          else pointB.x++;
-        } else if (pointB.y != pointA.y) {
-          if (pointB.y > pointA.y) pointB.y--;
-          else pointB.y++;
-        }
-
-        const current = this.map[pointB.x][pointB.y];
-        if (current == 0) {
-          this.map[pointB.x][pointB.y] = 2;
-          corridor.coordinates.push({ ...pointB });
-        }
-      }
-      this.corridors.push(corridor);
-    });
-  }
-
-  closestRoom(rect: Rectangle): Room {
-    let closest: Room | null = null;
-    let closestDistance = 1000;
-
-    this.rooms.forEach((room) => {
-      // If the rectangle is itself a registered room then we should not measure the distance to itself
-      if (room === rect) return;
-
-      const d = rectangleDistance(rect, room);
-      if (d < closestDistance) {
-        closestDistance = d;
-        closest = room;
-      }
-    });
-
-    if (!closest) throw new Error('Failed to find the closest room');
-
-    return closest;
+    this.startGeneration();
   }
 
   collidingRooms(rect: Rectangle) {
@@ -267,7 +160,7 @@ export class Dungeon {
     });
   }
 
-  placeStartingRoom() {
+  startGeneration() {
     const { prng } = this;
     const startingDirection = prng.pick(DIRECTIONS);
     let startingPoint: Point;
@@ -289,16 +182,74 @@ export class Dungeon {
     const type = prng.pick(CONNECTION_TYPES);
     const startingRoom = this.attemptRoom({
       type,
-      direction: inverseDirection(startingDirection),
+      direction: startingDirection,
       room: 'exit',
       point: startingPoint,
     });
 
-    console.log('FIRST ROOM', startingRoom);
-    if (!startingRoom) throw new Error('Failed to create first room');
+    if (!startingRoom) throw new Error('Failed to create starting room');
 
     this.startingRoom = startingRoom;
     this.rooms.push(startingRoom);
+
+    this.generateRooms(0);
+  }
+
+  generateRooms(startIndex: number) {
+    const { prng } = this;
+
+    let room = this.rooms[startIndex];
+
+    let failures = 0;
+    while (failures < 100 && this.rooms.length < 5) {
+      const direction = prng.pick(DIRECTIONS);
+      let point: Point;
+
+      switch (direction) {
+        case 'north':
+          point = { y: room.y - 1, x: prng.between(room.x, room.x + room.w) };
+          break;
+        case 'south':
+          point = {
+            y: room.y + room.h,
+            x: prng.between(room.x, room.x + room.w),
+          };
+          break;
+        case 'west':
+          point = { x: room.x - 1, y: prng.between(room.y, room.y + room.h) };
+          break;
+        case 'east':
+          point = {
+            x: room.x + room.w + 1,
+            y: prng.between(room.y, room.y + room.h),
+          };
+          break;
+      }
+
+      const type = prng.pick(CONNECTION_TYPES);
+      const next = this.attemptRoom({
+        type,
+        direction: inverseDirection(direction),
+        room,
+        point,
+      });
+
+      if (next) {
+        this.rooms.push(next);
+        room.connections.push({
+          type,
+          direction,
+          room: next,
+          point,
+        });
+        room = next;
+        failures = 0;
+      } else {
+        failures++;
+      }
+    }
+
+    console.log('ROOMS', this.rooms);
   }
 
   attemptRoom(connection: Connection) {
@@ -316,23 +267,31 @@ export class Dungeon {
       const [cpx, cpy] = [connection.point.x, connection.point.y];
 
       switch (connection.direction) {
-        case 'north':
+        case 'south':
           room.x = prng.between(cpx - room.w + 1, cpx + room.w - 1);
           room.y = connection.point.y - room.h - 1;
           break;
-        case 'south':
+        case 'north':
           room.x = prng.between(cpx - room.w + 1, cpx + room.w - 1);
           room.y = connection.point.y + 1;
           break;
-        case 'west':
+        case 'east':
           room.y = prng.between(cpy - room.h + 1, cpy + room.h - 1);
           room.x = connection.point.x - room.w - 1;
           break;
-        case 'east':
+        case 'west':
           room.y = prng.between(cpy - room.h + 1, cpy + room.h - 1);
           room.x = connection.point.x + 1;
           break;
       }
+
+      if (
+        room.x < 0 ||
+        room.y < 0 ||
+        room.x + room.w > this.mapSize ||
+        room.y + room.w > this.mapSize
+      )
+        return null;
 
       if (this.collidingRooms(room).length == 0) {
         return room;

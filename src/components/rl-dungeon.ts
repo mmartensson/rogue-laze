@@ -2,7 +2,7 @@
 import { LitElement, customElement, property, css } from 'lit-element';
 import { nothing, svg } from 'lit-html';
 
-import { Corridor, Dungeon, Room } from '../types/dungeon';
+import { Dungeon, Room } from '../types/dungeon';
 
 @customElement('rl-dungeon')
 export class DungeonElement extends LitElement {
@@ -38,7 +38,6 @@ export class DungeonElement extends LitElement {
       <rect x="0" y="0" width="512" height="512" fill="url(#grid)" />
 
       ${this.dungeon.rooms.map((room, index) => this.renderRoom(room, index))}
-      ${this.dungeon.corridors.map((corridor) => this.renderCorridor(corridor))}
     </svg>
     `;
   }
@@ -54,7 +53,9 @@ export class DungeonElement extends LitElement {
 
     const connections = room.connections.map((conn) => {
       return svg`
-        <circle cx=${conn.point.x * 8 - 4} cy=${conn.point.y * 8 - 4} r="4"/>
+        <rect x=${conn.point.x * 8} y=${
+        conn.point.y * 8
+      } width=8 height=8></rect>
       `;
     });
 
@@ -68,19 +69,9 @@ export class DungeonElement extends LitElement {
         <text x=${room.x * 8 + 1} y=${
       room.y * 8 + 7
     } class="room-no">${index}</text>
-      ${connections}
+        ${connections}
       </g>
     `;
   }
   // <text ... alignment-baseline="middle" ... text-anchor="middle"></text>
-
-  private renderCorridor(corridor: Corridor) {
-    return corridor.coordinates.map(
-      (coord) => svg`
-      <rect x=${coord.x * 8} y=${
-        coord.y * 8
-      } width="8" height="8" fill="rgba(0, 255, 255, 0.05)" stroke="#a9a9a9" stroke-width="1"></rect>
-    `
-    );
-  }
 }
