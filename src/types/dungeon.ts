@@ -1,7 +1,7 @@
 import { PRNG } from '../helpers/prng.js';
 
 /*
- * Algoithm to try out:
+ * Current algorithm:
  *
  * 1. Pick a starting point at the edge of the map, add an entry (may allow different types; eg. passageway/open/closed/locked/blocked)
  * 2. Add a random rectangular room (which includes hallway/corridor) that connects with the first door.
@@ -15,12 +15,15 @@ import { PRNG } from '../helpers/prng.js';
  *    has no connection to it. Pick a valid spot and add an entry.
  */
 
+// min/max width, min/max height
 const ROOM_DIMENSIONS = [
   [1, 1, 3, 10], // North/South corridor
   [3, 10, 1, 1], // East/West corridor
-  [2, 4, 2, 4], // Small room
+  [2, 3, 2, 3], // Tiny room
+  [3, 5, 3, 5], // Small room
   [4, 6, 4, 6], // Medium room
   [6, 10, 6, 10], // Large room
+  [8, 16, 8, 16], // Huge room
 ];
 
 export interface Point {
@@ -62,22 +65,25 @@ export const CONNECTION_TYPES: ConnectionType[] = [
   'locked-door',
 ];
 
-export interface Connection {
-  point: Point;
+export interface Connection extends Point {
   room: Room | 'exit';
   type: ConnectionType;
   direction: Direction;
+}
+
+export type EntityType = 'trap' | 'loot' | 'enemy';
+
+export const ENTITY_TYPES: EntityType[] = ['trap', 'loot', 'enemy'];
+
+export interface Entity extends Point {
+  type: EntityType;
 }
 
 // NOTE: A room should really be a collection of rectangles, allowing for irregular shapes; maybe a future consideration
 export interface Room extends Rectangle {
   index: number;
   connections: Connection[];
-
-  // Relative or absolute coordinates?
-  traps: Point[];
-  items: Point[];
-  enemies: Point[];
+  entities: Entity[];
 }
 
 export const relativeDirections = (
@@ -129,24 +135,15 @@ export const rectangleDistance = (from: Rectangle, to: Rectangle): number => {
 };
 
 export class Dungeon {
-  mapSize = 32;
+  mapSize = 20;
   prng: PRNG;
 
-  map: number[][];
   rooms: Room[];
   startingRoom!: Room;
 
   constructor(prng: PRNG) {
     this.prng = prng;
-    this.map = [];
     this.rooms = [];
-
-    for (let x = 0; x < this.mapSize; x++) {
-      this.map[x] = [];
-      for (let y = 0; y < this.mapSize; y++) {
-        this.map[x][y] = 0;
-      }
-    }
 
     this.startGeneration();
   }
@@ -164,7 +161,7 @@ export class Dungeon {
     return this.rooms
       .flatMap((room) => room.connections)
       .filter((conn) => {
-        const { x, y } = conn.point;
+        const { x, y } = conn;
         return (
           x >= rect.x &&
           x <= rect.x + rect.w &&
@@ -204,7 +201,7 @@ export class Dungeon {
       type,
       direction: startingDirection,
       room: 'exit',
-      point: startingPoint,
+      ...startingPoint,
     });
 
     if (!startingRoom) throw new Error('Failed to create starting room');
@@ -257,7 +254,7 @@ export class Dungeon {
         type,
         direction: inverseDirection(direction),
         room,
-        point,
+        ...point,
       });
 
       if (next) {
@@ -266,7 +263,7 @@ export class Dungeon {
           type,
           direction,
           room: next,
-          point,
+          ...point,
         });
         room = next;
         failures = 0;
@@ -292,34 +289,32 @@ export class Dungeon {
       room.w = prng.between(minWidth, maxWidth);
       room.h = prng.between(minHeight, maxHeight);
 
-      const [cpx, cpy] = [connection.point.x, connection.point.y];
+      const [cpx, cpy] = [connection.x, connection.y];
 
       switch (connection.direction) {
         case 'north':
           room.x = prng.between(cpx - room.w + 1, cpx);
-          room.y = connection.point.y + 1;
+          room.y = cpy + 1;
           break;
         case 'south':
           room.x = prng.between(cpx - room.w + 1, cpx);
-          room.y = connection.point.y - room.h;
+          room.y = cpy - room.h;
           break;
         case 'west':
           room.y = prng.between(cpy - room.h + 1, cpy);
-          room.x = connection.point.x + 1;
+          room.x = cpx + 1;
           break;
         case 'east':
           room.y = prng.between(cpy - room.h + 1, cpy);
-          room.x = connection.point.x - room.w;
+          room.x = cpx - room.w;
           break;
       }
-
-      console.log('Attempting to place', room);
 
       if (
         room.x < 0 ||
         room.y < 0 ||
-        room.x + room.w >= this.mapSize ||
-        room.y + room.h >= this.mapSize
+        room.x + room.w > this.mapSize ||
+        room.y + room.h > this.mapSize
       ) {
         // Outside the map
         continue;
@@ -327,12 +322,31 @@ export class Dungeon {
 
       if (this.collidingConnections(room).length > 0) {
         // Was a connection inside it
-        return null;
+        continue;
       }
 
-      if (this.collidingRooms(room).length == 0) {
-        return room;
+      if (this.collidingRooms(room).length > 0) {
+        // Intersects with another room
+        continue;
       }
+
+      // Add some entities to the room
+      room.entities = [];
+      const maxEntities = Math.min(6, room.w * room.h);
+      [...Array(prng.between(0, maxEntities))].forEach(() => {
+        const type = prng.pick(ENTITY_TYPES);
+        const x = prng.between(room.x, room.x + room.w);
+        const y = prng.between(room.y, room.y + room.h);
+        if (room.entities.find((e) => e.x === x && e.y === y)) return;
+        room.entities.push({
+          x,
+          y,
+          type,
+        });
+      });
+      console.log('ent', room.entities);
+
+      return room;
     }
 
     return null;

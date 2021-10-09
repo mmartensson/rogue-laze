@@ -45,6 +45,15 @@ export class DungeonElement extends LitElement {
           stroke: hsl(200,100%,30%);
           stroke-width: 1;
         }
+        .entity-loot {
+          fill: hsl(100,100%,60%);
+        }
+        .entity-trap {
+          fill: hsl(400,100%,60%);
+        }
+        .entity-enemy {
+          fill: hsl(370,100%,30%);
+        }
       </style>
       <defs>
         <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
@@ -64,50 +73,58 @@ export class DungeonElement extends LitElement {
       if (conn.direction == 'east' || conn.direction == 'west') {
         return svg`
           <g>
-            <rect class="connection" x=${conn.point.x * 8 - 1} y=${
-          conn.point.y * 8 + 1
+            <rect class="connection" x=${conn.x * 8 - 1} y=${
+          conn.y * 8 + 1
         } width=10 height=6></rect>
 
-            <line class="connection-wall" x1=${conn.point.x * 8} y1=${
-          conn.point.y * 8 + 0.5
+            <line class="connection-wall" x1=${conn.x * 8} y1=${
+          conn.y * 8 + 0.5
         }
-            x2=${conn.point.x * 8 + 8} y2=${conn.point.y * 8 + 0.5}></line>
+            x2=${conn.x * 8 + 8} y2=${conn.y * 8 + 0.5}></line>
 
-            <line class="connection-wall" x1=${conn.point.x * 8} y1=${
-          conn.point.y * 8 + 7.5
+            <line class="connection-wall" x1=${conn.x * 8} y1=${
+          conn.y * 8 + 7.5
         }
-            x2=${conn.point.x * 8 + 8} y2=${conn.point.y * 8 + 7.5}></line>
+            x2=${conn.x * 8 + 8} y2=${conn.y * 8 + 7.5}></line>
 
-            <line class="connection-symbol" x1=${conn.point.x * 8 + 4} y1=${
-          conn.point.y * 8
+            <line class="connection-symbol" x1=${conn.x * 8 + 4} y1=${
+          conn.y * 8
         }
-            x2=${conn.point.x * 8 + 4} y2=${conn.point.y * 8 + 8}></line>
+            x2=${conn.x * 8 + 4} y2=${conn.y * 8 + 8}></line>
           </g>
       `;
       } else {
         return svg`
           <g>
-            <rect class="connection" x=${conn.point.x * 8 + 1} y=${
-          conn.point.y * 8 - 1
+            <rect class="connection" x=${conn.x * 8 + 1} y=${
+          conn.y * 8 - 1
         } width=6 height=10></rect>
 
-            <line class="connection-wall" x1=${conn.point.x * 8 + 0.5} y1=${
-          conn.point.y * 8
+            <line class="connection-wall" x1=${conn.x * 8 + 0.5} y1=${
+          conn.y * 8
         }
-            x2=${conn.point.x * 8 + 0.5} y2=${conn.point.y * 8 + 8}></line>
+            x2=${conn.x * 8 + 0.5} y2=${conn.y * 8 + 8}></line>
 
-            <line class="connection-wall" x1=${conn.point.x * 8 + 7.5} y1=${
-          conn.point.y * 8
+            <line class="connection-wall" x1=${conn.x * 8 + 7.5} y1=${
+          conn.y * 8
         }
-            x2=${conn.point.x * 8 + 7.5} y2=${conn.point.y * 8 + 8}></line>
+            x2=${conn.x * 8 + 7.5} y2=${conn.y * 8 + 8}></line>
 
-            <line class="connection-symbol" x1=${conn.point.x * 8} y1=${
-          conn.point.y * 8 + 4
+            <line class="connection-symbol" x1=${conn.x * 8} y1=${
+          conn.y * 8 + 4
         }
-            x2=${conn.point.x * 8 + 8} y2=${conn.point.y * 8 + 4}></line>
+            x2=${conn.x * 8 + 8} y2=${conn.y * 8 + 4}></line>
           </g>
       `;
       }
+    });
+
+    const entities = room.entities.map((ent) => {
+      return svg`
+        <circle class="entity-${ent.type}" cx=${ent.x * 8 + 4} cy=${
+        ent.y * 8 + 4
+      } r=1></circle>
+      `;
     });
 
     return svg`
@@ -119,6 +136,7 @@ export class DungeonElement extends LitElement {
       room.y * 8 + 6
     } class="room-no">${index}</text>
         ${connections}
+        ${entities}
       </g>
     `;
   }
