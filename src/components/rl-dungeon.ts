@@ -44,13 +44,19 @@ export class DungeonElement extends LitElement {
   }
 
   private renderRoom(room: Room, index: number) {
-    const isStart = this.dungeon?.startRoom === room;
+    const isStart = this.dungeon?.startingRoom === room;
     // FIXME: Define colors in svg and reference them
 
     // NOTE: Currently marking the starting room; going forward we should be marking the current room; possibly doing a trivial fog-of-war
     const fill = isStart
       ? 'rgba(128, 255, 0, 0.3)'
       : 'rgba(255, 255, 255, 0.7)';
+
+    const connections = room.connections.map((conn) => {
+      return svg`
+        <circle cx=${conn.point.x * 8 - 4} cy=${conn.point.y * 8 - 4} r="4"/>
+      `;
+    });
 
     return svg`
       <g>
@@ -62,9 +68,11 @@ export class DungeonElement extends LitElement {
         <text x=${room.x * 8 + 1} y=${
       room.y * 8 + 7
     } class="room-no">${index}</text>
+      ${connections}
       </g>
     `;
   }
+  // <text ... alignment-baseline="middle" ... text-anchor="middle"></text>
 
   private renderCorridor(corridor: Corridor) {
     return corridor.coordinates.map(
