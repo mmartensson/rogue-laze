@@ -27,6 +27,7 @@ export class PageProgress extends PageElement {
       background-color: #668;
       display: flex;
       flex-direction: row;
+      box-sizing: border-box;
 
       width: 100%;
       height: 100%;
@@ -36,14 +37,7 @@ export class PageProgress extends PageElement {
       display: flex;
       flex-direction: column;
       padding: 1rem;
-    }
-
-    rl-mannequin {
-      width: 300px;
-    }
-
-    rl-dungeon {
-      width: 720px;
+      position: relative;
     }
 
     h1 {
@@ -83,6 +77,16 @@ export class PageProgress extends PageElement {
       .reduce((p, c) => p + c, 0);
 
     return html`
+      <section>
+        <rl-dungeon
+          .dungeon=${this.game.dungeon}
+          .location=${{
+            x: this.game.dungeon?.startingRoom.x,
+            y: this.game.dungeon?.startingRoom.y,
+          }}
+        ></rl-dungeon>
+      </section>
+
       <section id="character">
         <rl-mannequin .character=${this.character}></rl-mannequin>
       </section>
@@ -97,16 +101,6 @@ export class PageProgress extends PageElement {
             (item) => html`<li><rl-item .item=${item as any}></rl-item></li>`
           )}
         </ul>
-      </section>
-
-      <section style="flex: 1">
-        <rl-dungeon
-          .dungeon=${this.game.dungeon}
-          .location=${{
-            x: this.game.dungeon?.startingRoom.x,
-            y: this.game.dungeon?.startingRoom.y,
-          }}
-        ></rl-dungeon>
       </section>
     `;
   }

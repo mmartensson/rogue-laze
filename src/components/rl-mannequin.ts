@@ -15,7 +15,7 @@ export class MannequinElement extends LitElement {
 
   static styles = css`
     :host {
-      display: inline-block;
+      height: 100%;
     }
     rl-item {
       width: calc(100% - 2px);
@@ -26,7 +26,8 @@ export class MannequinElement extends LitElement {
       text-align: center;
       font-size: 150%;
     }
-    .summary {
+    svg {
+      height: 100%;
     }
   `;
 

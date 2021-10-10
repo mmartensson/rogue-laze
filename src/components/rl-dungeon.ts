@@ -18,14 +18,14 @@ export class DungeonElement extends LitElement {
       --trap-hue: 400;
       --enemy-hue: 370;
 
-      display: inline-block;
+      height: 100%;
+
+      display: flex;
       background-color: rgb(36, 41, 46);
-      padding: 20px;
-      border-radius: 10px;
     }
 
     svg {
-      max-height: 100%;
+      height: 100%;
     }
 
     svg .room {
