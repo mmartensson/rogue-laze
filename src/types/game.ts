@@ -37,7 +37,8 @@ export interface TickEvent {
 export type Action =
   | 'approach-connection'
   | 'approach-entity'
-  | 'traverse-connection';
+  | 'traverse-connection'
+  | 'return-to-town';
 
 // FIXME: Really really need to clean up the directory structure
 
@@ -52,7 +53,7 @@ export class Game {
   timeOfDeath?: Ticks;
   scheduled?: NodeJS.Timeout;
 
-  lastAction: Action = 'traverse-connection';
+  lastAction: Action = 'return-to-town';
   lastConnection?: Connection;
   lastEntity?: Entity;
   currentRoom?: Room;
@@ -64,8 +65,6 @@ export class Game {
     this.t0 = fromBase62(session);
     this.t1 = Math.ceil(this.t0 / TICK_MS) * TICK_MS;
     this.lastHandled = 0;
-
-    this.dungeon = new Dungeon(this.prng);
   }
 
   scheduledTick(): Promise<TickEvent> {
@@ -130,22 +129,19 @@ export class Game {
       summary = 'minor-success';
     }
 
-    // FIXME: Currently getting stuck if two connections shae the same facingConnection() Point;
-    // so rather than blocking this.lastAction == 'traverse-connection' we should try to make
-    // it really unlikely that the character goes back through that same connection.
-
-    if (this.dungeon) {
-      switch (this.lastAction) {
-        case 'approach-connection':
-          this.haveApproachedConnection();
-          break;
-        case 'traverse-connection':
-          this.haveTraversedConnection();
-          break;
-        case 'approach-entity':
-          this.haveApproachedEntity();
-          break;
-      }
+    switch (this.lastAction) {
+      case 'approach-connection':
+        this.haveApproachedConnection();
+        break;
+      case 'traverse-connection':
+        this.haveTraversedConnection();
+        break;
+      case 'approach-entity':
+        this.haveApproachedEntity();
+        break;
+      case 'return-to-town':
+        this.haveReturnedToTown();
+        break;
     }
 
     const current = ++this.lastHandled;
@@ -164,17 +160,6 @@ export class Game {
 
   // We have just passed through a connection and are looking for something new to do
   haveTraversedConnection() {
-    if (!this.dungeon) {
-      throw new Error('Unexpectedly had no dungeon');
-    }
-
-    if (!this.lastConnection || !this.currentRoom) {
-      // Initializing state for a brand new dungeon
-      this.lastConnection = this.dungeon.startingConnection;
-      this.currentRoom = this.dungeon.startingRoom;
-      this.currentRoom.visited = true;
-    }
-
     this.approachRemainingEntity() || this.approachConnection();
   }
 
@@ -191,6 +176,10 @@ export class Game {
     this.approachRemainingEntity() || this.approachConnection();
   }
 
+  haveReturnedToTown() {
+    this.sellInventory() || this.visitNewDungeon();
+  }
+
   moveTo(point: Point) {
     if (this.dungeon) {
       this.dungeon.location = point;
@@ -199,10 +188,18 @@ export class Game {
     }
   }
 
+  visitNewDungeon() {
+    this.dungeon = new Dungeon(this.prng);
+    this.lastConnection = this.dungeon.startingConnection;
+    this.currentRoom = this.dungeon.startingRoom;
+    this.currentRoom.visited = true;
+    this.lastAction = 'traverse-connection';
+  }
+
   traverseConnection() {
     if (!this.lastConnection || this.lastConnection.room === 'exit') {
-      console.warn('Approached the exit; currently not handled');
-      return false;
+      this.returnToTown();
+      return;
     }
 
     const nextRoom = this.lastConnection.room;
@@ -223,6 +220,21 @@ export class Game {
       );
       return false;
     }
+  }
+
+  returnToTown() {
+    this.dungeon = undefined;
+    this.currentRoom = undefined;
+    this.lastConnection = undefined;
+    this.lastAction = 'return-to-town';
+  }
+
+  sellInventory() {
+    // NOTE: Intentionally keeping lastAction
+    if (this.character.inventory.length == 0) return false;
+
+    this.character.sellInventory();
+    return true;
   }
 
   approachRemainingEntity() {
