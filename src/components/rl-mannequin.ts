@@ -29,6 +29,10 @@ export class MannequinElement extends LitElement {
     svg {
       height: 100%;
     }
+    .summary {
+      width: 428px;
+      font-size: 125%;
+    }
   `;
 
   render() {
@@ -122,7 +126,7 @@ export class MannequinElement extends LitElement {
     };
 
     return svg`
-      <foreignObject x=63 y=700 width="300" height="300">
+      <foreignObject x=0 y=700 width="428" height="260">
         <rl-item-describer visible .item=${characterAsItem} class="summary"></rl-item-describer>
       </foreignObject>
     `;
