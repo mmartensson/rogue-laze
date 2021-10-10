@@ -99,7 +99,7 @@ export class ItemDescriberElement extends LitElement {
 
     .name {
       align-self: center;
-      font-weight: bold;
+      font-weight: 400;
     }
 
     dl {
@@ -109,7 +109,7 @@ export class ItemDescriberElement extends LitElement {
     }
     dt {
       padding: 2px 4px;
-      font-weight: bold;
+      font-weight: 400;
       text-align: right;
     }
     dt:first-letter {
@@ -118,6 +118,7 @@ export class ItemDescriberElement extends LitElement {
     dd {
       margin: 0;
       padding: 2px 4px;
+      font-weight: 200;
     }
     dt.sep {
       font-size: 80%;
