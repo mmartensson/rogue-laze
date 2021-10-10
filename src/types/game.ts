@@ -86,8 +86,6 @@ export class Game {
 
       const timeout = ts - tc;
       this.scheduled = setTimeout(() => {
-        const tt = +Date.now();
-        // console.log(`Waited ${timeout} ms at ${tc} with the goal of reaching ${ts}, ended up at ${tt}`);
         this.scheduled = undefined;
         resolve(this.tick());
       }, timeout);
@@ -112,22 +110,9 @@ export class Game {
       };
     }
 
-    let summary: TickSummary = 'uneventful';
-
-    // XXX: Example game logic... need to figure out the real ones later
-
-    if (this.character.level < MAX_LEVEL) {
-      if (this.prng.fraction() > 0.999) {
-        this.character.level++;
-      }
-    }
-
-    if (this.character.inventory.length > 20) {
-      this.character.sellInventory();
-    } else if (this.prng.fraction() > 0.5) {
-      this.character.addItem(randomItem(this.prng, this.character.level));
-      summary = 'minor-success';
-    }
+    // FIXME: Either figure out how to create/forward a summary from the this.have*() functions,
+    // or get rid of the minor-success style summaries.
+    const summary: TickSummary = 'uneventful';
 
     switch (this.lastAction) {
       case 'approach-connection':
@@ -171,6 +156,9 @@ export class Game {
       this.currentRoom.entities = this.currentRoom.entities.filter(
         (ent) => ent !== this.lastEntity
       );
+
+      // For now, we always give one item reglardless of type
+      this.character.addItem(randomItem(this.prng, this.character.level));
     }
 
     this.approachRemainingEntity() || this.approachConnection();
@@ -227,6 +215,10 @@ export class Game {
     this.currentRoom = undefined;
     this.lastConnection = undefined;
     this.lastAction = 'return-to-town';
+
+    if (this.character.level < MAX_LEVEL) {
+      this.character.level++;
+    }
   }
 
   sellInventory() {

@@ -44,10 +44,17 @@ export class PageProgress extends PageElement {
       align-self: center;
     }
 
+    #inventory div {
+      position: absolute;
+      inset: 0 auto;
+      overflow: hidden;
+
+      /* TODO: Gradual opacity at bottom to hide overflow of items */
+    }
+
     #inventory ul {
       padding: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     #inventory ul li rl-item {
@@ -92,15 +99,21 @@ export class PageProgress extends PageElement {
       </section>
 
       <section id="inventory">
-        <p>Coin: <rl-coin coin=${this.character.coin}></rl-coin></p>
-        <p>Weight: ${inventoryWeight}</p>
-        <p>Tick: ${this.game.lastHandled}</p>
+        <div>
+          <p>Coin: <rl-coin coin=${this.character.coin}></rl-coin></p>
+          <p>Weight: ${inventoryWeight}</p>
+          <p>Tick: ${this.game.lastHandled}</p>
+          <p>Level: ${this.character.level}</p>
 
-        <ul>
-          ${this.character.inventory.map(
-            (item) => html`<li><rl-item .item=${item as any}></rl-item></li>`
-          )}
-        </ul>
+          <ul>
+            ${this.character.inventory
+              .reverse()
+              .map(
+                (item) =>
+                  html`<li><rl-item .item=${item as any}></rl-item></li>`
+              )}
+          </ul>
+        </div>
       </section>
     `;
   }
