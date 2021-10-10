@@ -136,7 +136,6 @@ export class ItemDescriberElement extends LitElement {
   }
 
   shouldUpdate(changedProperties: Map<string, unknown>) {
-    console.log('Should update?', changedProperties.keys);
     if (changedProperties.has('item')) {
       this.rarity = this.item.rarity;
     }

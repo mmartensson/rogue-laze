@@ -3,7 +3,14 @@ import { fromBase62 } from '../helpers/base62';
 import { randomItem } from '../helpers/equipment';
 import { PRNG } from '../helpers/prng';
 import { Character } from './character';
-import { Connection, Dungeon, facingConnection } from './dungeon';
+import {
+  Connection,
+  Dungeon,
+  Entity,
+  facingConnection,
+  Point,
+  Room,
+} from './dungeon';
 import { MAX_LEVEL } from './equipment';
 
 export const TICK_MS = 5000;
@@ -46,6 +53,9 @@ export class Game {
   scheduled?: NodeJS.Timeout;
 
   lastAction: Action = 'traverse-connection';
+  lastConnection?: Connection;
+  lastEntity?: Entity;
+  currentRoom?: Room;
 
   constructor(session: string) {
     this.session = session;
@@ -125,54 +135,16 @@ export class Game {
     // it really unlikely that the character goes back through that same connection.
 
     if (this.dungeon) {
-      const { x, y } = this.dungeon.location;
-
-      // FIXME: Clearly there are more efficient ways of keeping track of the current room
-      const [room] = this.dungeon.collidingRooms({ x, y, w: 1, h: 1 });
-      room.visited = true;
-
-      // First eat all of the pills... uhm... I mean step into all of the traps and loot all of the stuff
-      const entity = room.entities.shift();
-      if (entity) {
-        if (x == entity.x && y === entity.y) {
-          // We are currently on top of the entity... maybe do something fancy
-        } else {
-          // Walk to the entity (keeping it to ensure it is still rendered)
-          this.dungeon.location = { x: entity.x, y: entity.y };
-          room.entities.unshift(entity);
-          this.lastAction = 'approach-entity';
-        }
-      } else {
-        const arrived = room.connections.find((c) => {
-          const f = facingConnection(c);
-          return f.x == x && f.y == y;
-        });
-        let destination: Connection | undefined = undefined;
-
-        if (arrived && this.lastAction !== 'traverse-connection') {
-          if (arrived.room === 'exit') {
-            // I guess we are leaving? FIXME: Figure this out
-          } else {
-            destination = arrived.room.connections.find(
-              (c) => c.x == arrived.x && c.y == arrived.y
-            );
-            this.lastAction = 'traverse-connection';
-          }
-        } else {
-          const unvisited = room.connections.find(
-            (c) => c.room != 'exit' && !c.room.visited
-          );
-          if (unvisited) {
-            destination = unvisited;
-          } else {
-            destination = this.prng.pick(room.connections);
-          }
-          this.lastAction = 'approach-connection';
-        }
-
-        if (destination) {
-          this.dungeon.location = facingConnection(destination);
-        }
+      switch (this.lastAction) {
+        case 'approach-connection':
+          this.haveApproachedConnection();
+          break;
+        case 'traverse-connection':
+          this.haveTraversedConnection();
+          break;
+        case 'approach-entity':
+          this.haveApproachedEntity();
+          break;
       }
     }
 
@@ -182,5 +154,131 @@ export class Game {
       current,
       max,
     };
+  }
+
+  // We are currently at one side of lastConnection, intending to move to the other side
+  haveApproachedConnection() {
+    // NOTE: At this point we could fail to pick a locked door or something similar
+    this.traverseConnection();
+  }
+
+  // We have just passed through a connection and are looking for something new to do
+  haveTraversedConnection() {
+    if (!this.dungeon) {
+      throw new Error('Unexpectedly had no dungeon');
+    }
+
+    if (!this.lastConnection || !this.currentRoom) {
+      // Initializing state for a brand new dungeon
+      this.lastConnection = this.dungeon.startingConnection;
+      this.currentRoom = this.dungeon.startingRoom;
+      this.currentRoom.visited = true;
+    }
+
+    this.approachRemainingEntity() || this.approachConnection();
+  }
+
+  // We have approached an entity, which will likely have some effect depending on its type
+  haveApproachedEntity() {
+    // FIXME: Implement this properly; this could trigger a mulit-tick fight or similar
+    if (this.currentRoom && this.lastEntity) {
+      // Simple instant nom nom
+      this.currentRoom.entities = this.currentRoom.entities.filter(
+        (ent) => ent !== this.lastEntity
+      );
+    }
+
+    this.approachRemainingEntity() || this.approachConnection();
+  }
+
+  moveTo(point: Point) {
+    if (this.dungeon) {
+      this.dungeon.location = point;
+    } else {
+      console.warn('Movement requested without an active dungeon');
+    }
+  }
+
+  traverseConnection() {
+    if (!this.lastConnection || this.lastConnection.room === 'exit') {
+      console.warn('Approached the exit; currently not handled');
+      return false;
+    }
+
+    const nextRoom = this.lastConnection.room;
+    const matchingConnection = nextRoom.connections.find(
+      (c) => c.room === this.currentRoom
+    );
+    if (matchingConnection) {
+      this.moveTo(facingConnection(matchingConnection));
+      this.currentRoom = nextRoom;
+      this.currentRoom.visited = true;
+      this.lastConnection = matchingConnection;
+      this.lastAction = 'traverse-connection';
+      return true;
+    } else {
+      console.warn(
+        'Unexpectedly did not find a matching connection for',
+        this.lastConnection
+      );
+      return false;
+    }
+  }
+
+  approachRemainingEntity() {
+    if (!this.currentRoom) {
+      throw new Error('Unexpectedly had no current room');
+    }
+
+    const entity = this.currentRoom.entities[0];
+    if (entity) {
+      this.moveTo({ x: entity.x, y: entity.y });
+      this.lastEntity = entity;
+      this.lastAction = 'approach-entity';
+      console.log('HEADING FOR NON NOM!', entity);
+      return true;
+    }
+
+    return false;
+  }
+
+  approachConnection() {
+    const connection = this.pickConnection();
+
+    this.moveTo(facingConnection(connection));
+    this.lastConnection = connection;
+    this.lastAction = 'approach-connection';
+
+    return true;
+  }
+
+  pickConnection() {
+    if (!this.currentRoom) {
+      throw new Error('Unexpectedly had no current room');
+    }
+
+    const all = this.currentRoom.connections;
+
+    // Only one choice; let's go back
+    if (all.length === 1) {
+      console.log('ONLY ONE WAY TO GO!');
+      return all[0];
+    }
+
+    // Trying to find something new and exciting
+    const unvisited = all.filter((c) => c.room != 'exit' && !c.room.visited);
+    if (unvisited.length > 0) {
+      console.log('PICKING A FRESH ROOM!', unvisited);
+      return this.prng.pick(unvisited);
+    }
+
+    const notBack = all.filter((c) => c !== this.lastConnection);
+    if (notBack.length === 0) {
+      throw new Error('No way to go but back; should have been handled above');
+    }
+
+    console.log('REVISITING AN OLD ROOM!', notBack);
+
+    return this.prng.pick(notBack);
   }
 }
