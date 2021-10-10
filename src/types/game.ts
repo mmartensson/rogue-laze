@@ -27,6 +27,11 @@ export interface TickEvent {
   max?: Ticks;
 }
 
+export type Action =
+  | 'approach-connection'
+  | 'approach-entity'
+  | 'traverse-connection';
+
 // FIXME: Really really need to clean up the directory structure
 
 export class Game {
@@ -39,6 +44,8 @@ export class Game {
   lastHandled: Ticks;
   timeOfDeath?: Ticks;
   scheduled?: NodeJS.Timeout;
+
+  lastAction: Action = 'traverse-connection';
 
   constructor(session: string) {
     this.session = session;
@@ -113,11 +120,16 @@ export class Game {
       summary = 'minor-success';
     }
 
+    // FIXME: Currently getting stuck if two connections shae the same facingConnection() Point;
+    // so rather than blocking this.lastAction == 'traverse-connection' we should try to make
+    // it really unlikely that the character goes back through that same connection.
+
     if (this.dungeon) {
       const { x, y } = this.dungeon.location;
 
       // FIXME: Clearly there are more efficient ways of keeping track of the current room
       const [room] = this.dungeon.collidingRooms({ x, y, w: 1, h: 1 });
+      room.visited = true;
 
       // First eat all of the pills... uhm... I mean step into all of the traps and loot all of the stuff
       const entity = room.entities.shift();
@@ -128,6 +140,7 @@ export class Game {
           // Walk to the entity (keeping it to ensure it is still rendered)
           this.dungeon.location = { x: entity.x, y: entity.y };
           room.entities.unshift(entity);
+          this.lastAction = 'approach-entity';
         }
       } else {
         const arrived = room.connections.find((c) => {
@@ -136,17 +149,14 @@ export class Game {
         });
         let destination: Connection | undefined = undefined;
 
-        // FIXME: Okay, we need to have some actual state in Game; the 'arrived' code means the
-        // character will walk back and forth through the first connection, never getting anywhere
-        // unless there is an entity in the room to distract it.
-
-        if (arrived) {
+        if (arrived && this.lastAction !== 'traverse-connection') {
           if (arrived.room === 'exit') {
             // I guess we are leaving? FIXME: Figure this out
           } else {
             destination = arrived.room.connections.find(
               (c) => c.x == arrived.x && c.y == arrived.y
             );
+            this.lastAction = 'traverse-connection';
           }
         } else {
           const unvisited = room.connections.find(
@@ -157,6 +167,7 @@ export class Game {
           } else {
             destination = this.prng.pick(room.connections);
           }
+          this.lastAction = 'approach-connection';
         }
 
         if (destination) {
