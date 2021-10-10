@@ -44,12 +44,24 @@ export class PageProgress extends PageElement {
       align-self: center;
     }
 
-    #inventory div {
-      position: absolute;
-      inset: 0 auto;
-      overflow: hidden;
+    #inventory {
+      flex: 1;
+    }
 
-      /* TODO: Gradual opacity at bottom to hide overflow of items */
+    #inventory-content {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    #inventory-fader {
+      position: absolute;
+      inset: 80% 0 0 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(102, 102, 136, 1) 100%
+      );
     }
 
     #inventory ul {
@@ -94,26 +106,24 @@ export class PageProgress extends PageElement {
         ></rl-dungeon>
       </section>
 
-      <section id="character">
+      <section>
         <rl-mannequin .character=${this.character}></rl-mannequin>
       </section>
 
       <section id="inventory">
-        <div>
+        <div id="inventory-content">
           <p>Coin: <rl-coin coin=${this.character.coin}></rl-coin></p>
           <p>Weight: ${inventoryWeight}</p>
           <p>Tick: ${this.game.lastHandled}</p>
           <p>Level: ${this.character.level}</p>
 
           <ul>
-            ${this.character.inventory
-              .reverse()
-              .map(
-                (item) =>
-                  html`<li><rl-item .item=${item as any}></rl-item></li>`
-              )}
+            ${this.character.inventory.map(
+              (item) => html`<li><rl-item .item=${item as any}></rl-item></li>`
+            )}
           </ul>
         </div>
+        <div id="inventory-fader"></div>
       </section>
     `;
   }

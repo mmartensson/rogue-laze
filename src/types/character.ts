@@ -34,13 +34,13 @@ export class Character {
         const oldMain = this.equipment.main;
 
         if (oldMain && oldMain.price >= item.price) {
-          this.inventory.push(item);
+          this.inventory.unshift(item);
           return;
         }
 
         this.equipment.main = item;
         if (oldMain) {
-          this.inventory.push(oldMain);
+          this.inventory.unshift(oldMain);
         }
       } else if (base.location == 'main-2h') {
         const oldMain = this.equipment.main;
@@ -50,17 +50,17 @@ export class Character {
         if (oldMain) oldPrice += oldMain.price;
         if (oldOffhand) oldPrice += oldOffhand.price;
         if (oldPrice >= item.price) {
-          this.inventory.push(item);
+          this.inventory.unshift(item);
           return;
         }
 
         this.equipment.main = item;
         if (oldMain) {
-          this.inventory.push(oldMain);
+          this.inventory.unshift(oldMain);
         }
         if (oldOffhand) {
           delete this.equipment.offhand;
-          this.inventory.push(oldOffhand);
+          this.inventory.unshift(oldOffhand);
         }
       } else if (base.location == 'offhand') {
         // TODO: Price check
@@ -73,13 +73,13 @@ export class Character {
           const oldMainIsTwoHanded =
             (oldMainBase as BaseWeapon).location == 'main-2h';
           if (oldMainIsTwoHanded) {
-            this.inventory.push(item);
+            this.inventory.unshift(item);
             return;
           }
         }
         this.equipment.offhand = item;
         if (oldOffhand) {
-          this.inventory.push(oldOffhand);
+          this.inventory.unshift(oldOffhand);
         }
       } else if (base.location == 'either') {
         // TODO: Price check
@@ -89,10 +89,10 @@ export class Character {
 
         if (oldOffhand) {
           this.equipment.offhand = item;
-          this.inventory.push(oldOffhand);
+          this.inventory.unshift(oldOffhand);
         } else if (oldMain) {
           this.equipment.main = item;
-          this.inventory.push(oldMain);
+          this.inventory.unshift(oldMain);
         } else {
           this.equipment.offhand = item;
         }
@@ -101,19 +101,19 @@ export class Character {
       const oldArmor = this.equipment[base.location];
 
       if (oldArmor && oldArmor.price >= item.price) {
-        this.inventory.push(item);
+        this.inventory.unshift(item);
         return;
       }
 
       this.equipment[base.location] = item;
       if (oldArmor) {
-        this.inventory.push(oldArmor);
+        this.inventory.unshift(oldArmor);
       }
 
       this.recalcTotalMitigation();
     } else {
       // Other items, just having a monetary value
-      this.inventory.push(item);
+      this.inventory.unshift(item);
     }
   }
 
