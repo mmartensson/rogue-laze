@@ -197,40 +197,46 @@ export class Dungeon {
 
   startGeneration() {
     const { prng } = this;
-    const startingDirection = prng.pick(DIRECTIONS);
-    let startingPoint: Point;
-    switch (startingDirection) {
-      case 'north':
-        startingPoint = { y: 0, x: prng.between(0, this.mapSize - 1) };
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const startingDirection = prng.pick(DIRECTIONS);
+      let startingPoint: Point;
+      switch (startingDirection) {
+        case 'north':
+          startingPoint = { y: 0, x: prng.between(0, this.mapSize - 1) };
+          break;
+        case 'south':
+          startingPoint = {
+            y: this.mapSize - 1,
+            x: prng.between(0, this.mapSize - 1),
+          };
+          break;
+        case 'west':
+          startingPoint = { x: 0, y: prng.between(0, this.mapSize) };
+          break;
+        case 'east':
+          startingPoint = {
+            x: this.mapSize - 1,
+            y: prng.between(0, this.mapSize - 1),
+          };
+          break;
+      }
+
+      const type = prng.pick(CONNECTION_TYPES);
+      const startingRoom = this.attemptRoom({
+        type,
+        direction: startingDirection,
+        room: 'exit',
+        ...startingPoint,
+      });
+
+      if (startingRoom) {
+        this.rooms = [startingRoom];
         break;
-      case 'south':
-        startingPoint = {
-          y: this.mapSize - 1,
-          x: prng.between(0, this.mapSize - 1),
-        };
-        break;
-      case 'west':
-        startingPoint = { x: 0, y: prng.between(0, this.mapSize) };
-        break;
-      case 'east':
-        startingPoint = {
-          x: this.mapSize - 1,
-          y: prng.between(0, this.mapSize - 1),
-        };
-        break;
+      }
     }
 
-    const type = prng.pick(CONNECTION_TYPES);
-    const startingRoom = this.attemptRoom({
-      type,
-      direction: startingDirection,
-      room: 'exit',
-      ...startingPoint,
-    });
-
-    if (!startingRoom) throw new Error('Failed to create starting room');
-
-    this.rooms.push(startingRoom);
+    if (!this.startingRoom) throw new Error('Failed to create starting room');
 
     this.generateRooms(0);
   }

@@ -68,6 +68,7 @@ export class PageProgress extends PageElement {
       padding: 0;
       overflow: hidden;
       font-weight: 200;
+      line-height: 22px;
     }
 
     #inventory ul li rl-item {

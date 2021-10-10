@@ -51,7 +51,7 @@ export class Game {
   t1: EpochMs; // Time of first tick; after t0 and divisible by TICK_MS
   lastHandled: Ticks;
   timeOfDeath?: Ticks;
-  scheduled?: NodeJS.Timeout;
+  scheduled?: NodeJS.Timeout | 'microtask';
 
   lastAction: Action = 'return-to-town';
   lastConnection?: Connection;
@@ -79,12 +79,19 @@ export class Game {
     return new Promise((resolve) => {
       const ts = (this.lastHandled + 1) * TICK_MS + this.t1;
 
-      if (ts < tc) {
-        resolve(this.tick());
+      const timeout = Math.max(ts - tc, 0);
+      if (timeout === 0) {
+        // Running as a microtask or even immediately is decently fast whereas
+        // a setTimeout(, 0) or requestAnimationFrame slows the fast forwarding
+        // down to a crawl. Might be a good place for a worker.
+        this.scheduled = 'microtask';
+        queueMicrotask(() => {
+          this.scheduled = undefined;
+          resolve(this.tick());
+        });
         return;
       }
 
-      const timeout = ts - tc;
       this.scheduled = setTimeout(() => {
         this.scheduled = undefined;
         resolve(this.tick());
@@ -177,6 +184,14 @@ export class Game {
   }
 
   visitNewDungeon() {
+    // XXX: Just some progress debugging for fast forwarding
+    const tc = +Date.now();
+    const max = Math.floor((tc - this.t1) / TICK_MS);
+    const pct = Math.floor((100 * this.lastHandled) / max);
+    console.log(
+      `Time for a new dungeon; level: ${this.character.level}; progress: ${pct}%`
+    );
+
     this.dungeon = new Dungeon(this.prng);
     this.lastConnection = this.dungeon.startingConnection;
     this.currentRoom = this.dungeon.startingRoom;
@@ -239,7 +254,7 @@ export class Game {
       this.moveTo({ x: entity.x, y: entity.y });
       this.lastEntity = entity;
       this.lastAction = 'approach-entity';
-      console.log('HEADING FOR NON NOM!', entity);
+      // console.log('HEADING FOR NON NOM!', entity);
       return true;
     }
 
@@ -265,14 +280,14 @@ export class Game {
 
     // Only one choice; let's go back
     if (all.length === 1) {
-      console.log('ONLY ONE WAY TO GO!');
+      // console.log('ONLY ONE WAY TO GO!');
       return all[0];
     }
 
     // Trying to find something new and exciting
     const unvisited = all.filter((c) => c.room != 'exit' && !c.room.visited);
     if (unvisited.length > 0) {
-      console.log('PICKING A FRESH ROOM!', unvisited);
+      // console.log('PICKING A FRESH ROOM!', unvisited);
       return this.prng.pick(unvisited);
     }
 
@@ -281,7 +296,7 @@ export class Game {
       throw new Error('No way to go but back; should have been handled above');
     }
 
-    console.log('REVISITING AN OLD ROOM!', notBack);
+    // console.log('REVISITING AN OLD ROOM!', notBack);
 
     return this.prng.pick(notBack);
   }
