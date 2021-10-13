@@ -82,6 +82,11 @@ export class PageProgress extends PageElement {
 
     const session = this.location?.params?.session as string;
     this.game = new Game(session);
+
+    const worker = new Worker(new URL('../workers/game-loop-worker.js', import.meta.url), {
+      type: 'module'
+    });
+    worker.postMessage(['hi']);
   }
 
   get character() {
