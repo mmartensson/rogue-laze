@@ -1,14 +1,15 @@
 /* eslint-disable import/extensions */
 import { LitElement, customElement, property, css } from 'lit-element';
-import { nothing, svg } from 'lit-html';
+import { svg } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
-
-import { Dungeon } from '../game-loop/dungeon';
-import { Room } from '../shared/room';
+import type { Point } from '../shared/geometry';
+import type { Room } from '../shared/room';
 
 @customElement('rl-dungeon')
 export class DungeonElement extends LitElement {
-  @property({ attribute: false }) dungeon?: Dungeon;
+  @property({ attribute: false }) mapSize!: number;
+  @property({ attribute: false }) location!: Point;
+  @property({ attribute: false }) rooms!: Room[];
 
   static styles = css`
     :host {
@@ -96,29 +97,21 @@ export class DungeonElement extends LitElement {
   `;
 
   render() {
-    if (!this.dungeon) return nothing;
-
-    const size = this.dungeon.mapSize;
+    const { mapSize, location, rooms } = this;
 
     return svg`
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 ${
-      size * 8
-    } ${size * 8}">
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 ${mapSize * 8} ${mapSize * 8}">
       <defs>
         <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
           <path d="M 8 0 L 0 0 0 8" />
         </pattern>
       </defs>
 
-      ${this.dungeon.rooms.map((room, index) => this.renderRoom(room, index))}
+      ${rooms.map((room, index) => this.renderRoom(room, index))}
 
-      <rect x="0" y="0" width=${size * 8} height=${
-      size * 8
-    } fill="url(#grid)" />
+      <rect x="0" y="0" width=${mapSize * 8} height=${mapSize * 8} fill="url(#grid)" />
 
-      <circle id="character" cx=${this.dungeon.location.x * 8 + 4} cy=${
-      this.dungeon.location.y * 8 + 4
-    } r=1></circle>
+      <circle id="character" cx=${location.x * 8 + 4} cy=${location.y * 8 + 4} r=1></circle>
     </svg>
     `;
   }

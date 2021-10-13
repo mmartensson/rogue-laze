@@ -1,27 +1,17 @@
-/* eslint-disable import/no-duplicates */
-/* eslint-disable import/extensions */
-import { html, css, customElement, state, query } from 'lit-element';
+import { html, css, customElement, state, nothing, TemplateResult } from 'lit-element';
 
-import type { DungeonElement } from '../components/rl-dungeon';
-import type { MannequinElement } from '../components/rl-mannequin';
 import { PageElement } from '../helpers/page-element';
 import '../components/rl-mannequin';
 import '../components/rl-dungeon';
 import '../components/rl-item';
 import '../components/rl-coin';
-import { Game } from '../game-loop/game';
-import { GameLoopOriginMessage, InitMessage } from '../shared/messages';
-
-// TODO: Add a nifty mouseover for items, for use on mannequin and in inventory and also in prose with associated items
-// (the goblin dropped a [Smelly Spear]).
+import type { GameLoopOriginMessage, InitMessage } from '../shared/messages';
+import type { Snapshot } from '../shared/snapshot';
 
 @customElement('page-progress')
 export class PageProgress extends PageElement {
-  @state() private game!: Game;
-  @state() private fastForwarding = false;
-
-  @query('rl-mannequin') private mannequin?: MannequinElement;
-  @query('rl-dungeon') private dungeon?: DungeonElement;
+  @state() private fastForwardPercent: number|null = null;
+  @state() private snapshot: Snapshot|null = null;
 
   static styles = css`
     :host {
@@ -82,7 +72,9 @@ export class PageProgress extends PageElement {
     super.connectedCallback();
 
     const session = this.location?.params?.session as string;
-    this.game = new Game(session);
+    if (!session) {
+      window.location.href = '/';
+    }
 
     const worker = new Worker(new URL('../game-loop/index.js', import.meta.url), {
       type: 'module'
@@ -92,48 +84,69 @@ export class PageProgress extends PageElement {
       session
     }
     worker.postMessage(init);
-    worker.onmessage = (ev: MessageEvent<GameLoopOriginMessage>) => {
-      console.log('Main got data', ev.data);
-    }
-  }
 
-  get character() {
-    return this.game.character;
+    worker.onmessage = (ev: MessageEvent<GameLoopOriginMessage>) => {
+      switch (ev.data.type) {
+      case 'fast-forward-progress':
+        this.snapshot = ev.data.snapshot;
+        this.fastForwardPercent = ~~((100 * ev.data.currentTick) / ev.data.maximumTick);
+        break;
+      case 'tick-progress':
+        this.snapshot = ev.data.snapshot;
+        this.fastForwardPercent = null;
+        break;
+      }
+    }
   }
 
   render() {
-    if (this.fastForwarding) {
+    if (this.snapshot === null) {
+      // Expecting this to be the case a very short time (i.e. just a roundtrip to the worker)
+      return nothing;
+    }
+
+    if (this.fastForwardPercent !== null) {
       return this.renderFastForwarding();
     }
 
-    const inventoryWeight = this.character.inventory
+    const { character, mapSize, location, rooms } = this.snapshot;
+
+    const inventoryWeight = character.inventory
       .map((item) => item.weight)
       .reduce((p, c) => p + c, 0);
 
+    let map: TemplateResult;
+    if (mapSize && location && rooms) {
+      map = html`
+        <rl-dungeon
+          .mapSize=${mapSize}
+          .location=${location}
+          .rooms=${rooms}
+        ></rl-dungeon>
+      `;
+    } else {
+      map = html`
+        This is a placeholder for the town and possibly other locations
+      `;
+    }
+
     return html`
       <section>
-        <rl-dungeon
-          .dungeon=${this.game.dungeon}
-          .location=${{
-            x: this.game.dungeon?.startingRoom.x,
-            y: this.game.dungeon?.startingRoom.y,
-          }}
-        ></rl-dungeon>
+        ${map}
       </section>
 
       <section>
-        <rl-mannequin .character=${this.character}></rl-mannequin>
+        <rl-mannequin .character=${character}></rl-mannequin>
       </section>
 
       <section id="inventory">
         <div id="inventory-content">
-          <p>Coin: <rl-coin coin=${this.character.coin}></rl-coin></p>
+          <p>Coin: <rl-coin coin=${character.coin}></rl-coin></p>
           <p>Weight: ${inventoryWeight}</p>
-          <p>Tick: ${this.game.lastHandled}</p>
-          <p>Level: ${this.character.level}</p>
+          <p>Level: ${character.level}</p>
 
           <ul>
-            ${this.character.inventory.map(
+            ${character.inventory.map(
               (item) => html`<li><rl-item .item=${item as any}></rl-item></li>`
             )}
           </ul>
@@ -141,35 +154,6 @@ export class PageProgress extends PageElement {
         <div id="inventory-fader"></div>
       </section>
     `;
-  }
-
-  async updated() {
-    const tickEvent = await this.game.scheduledTick();
-    if (tickEvent.summary === 'already-scheduled') return;
-
-    const { max, current } = tickEvent;
-    if (max !== undefined && current !== undefined) {
-      const diff = max - current;
-      if (diff > 100 && !this.fastForwarding) {
-        this.fastForwarding = true;
-      }
-      if (diff < 5 && this.fastForwarding) {
-        this.fastForwarding = false;
-        console.log(`Fast forwarding ended. Currenly at tick ${current}`);
-      }
-    }
-
-    if (this.fastForwarding) {
-      // FIXME: Some fancy progress update properties, meaning not explicit requestUpdate() needed
-      // If we expect the logic to actually ever take a couple of seconds to run, then we can use
-      // tickEvent.summary === 'major-success' etc to do fancy flashes on the progress bar to give
-      // a little hint as to where things are going.
-      this.requestUpdate();
-    } else {
-      this.requestUpdate();
-      this.mannequin?.requestUpdate();
-      this.dungeon?.requestUpdate();
-    }
   }
 
   renderFastForwarding() {
