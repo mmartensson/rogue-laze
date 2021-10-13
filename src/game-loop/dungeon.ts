@@ -65,8 +65,10 @@ export type ConnectionType = typeof CONNECTION_TYPES_BASE[number];
 export const CONNECTION_TYPES =
   CONNECTION_TYPES_BASE as never as ConnectionType[];
 
+export type RoomRef = number | 'exit';
+
 export interface Connection extends Point {
-  room: Room | 'exit';
+  roomRef: RoomRef;
   type: ConnectionType;
   direction: Direction;
 }
@@ -226,7 +228,7 @@ export class Dungeon {
       const startingRoom = this.attemptRoom({
         type,
         direction: startingDirection,
-        room: 'exit',
+        roomRef: 'exit',
         ...startingPoint,
       });
 
@@ -282,7 +284,7 @@ export class Dungeon {
       const next = this.attemptRoom({
         type,
         direction: inverseDirection(direction),
-        room,
+        roomRef: room.index,
         ...point,
       });
 
@@ -291,7 +293,7 @@ export class Dungeon {
         room.connections.push({
           type,
           direction,
-          room: next,
+          roomRef: next.index,
           ...point,
         });
         room = next;
@@ -309,7 +311,7 @@ export class Dungeon {
   attemptRoom(connection: Connection) {
     const { prng } = this;
 
-    const room = { connections: [connection] } as Room;
+    const room = { connections: [connection], index: this.rooms.length } as Room;
 
     for (let attempt = 0; attempt < 5; attempt++) {
       const [minWidth, maxWidth, minHeight, maxHeight] =

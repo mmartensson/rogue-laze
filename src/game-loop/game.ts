@@ -200,14 +200,14 @@ export class Game {
   }
 
   traverseConnection() {
-    if (!this.lastConnection || this.lastConnection.room === 'exit') {
+    if (!this.dungeon || !this.lastConnection || this.lastConnection.roomRef === 'exit') {
       this.returnToTown();
       return;
     }
 
-    const nextRoom = this.lastConnection.room;
+    const nextRoom = this.dungeon.rooms[this.lastConnection.roomRef];
     const matchingConnection = nextRoom.connections.find(
-      (c) => c.room === this.currentRoom
+      (c) => c.roomRef === this.currentRoom?.index
     );
     if (matchingConnection) {
       this.moveTo(facingConnection(matchingConnection));
@@ -287,7 +287,7 @@ export class Game {
     }
 
     // Trying to find something new and exciting
-    const unvisited = all.filter((c) => c.room != 'exit' && !c.room.visited);
+    const unvisited = all.filter((c) => c.roomRef != 'exit' && !this.dungeon?.rooms[c.roomRef].visited);
     if (unvisited.length > 0) {
       // console.log('PICKING A FRESH ROOM!', unvisited);
       return this.prng.pick(unvisited);
