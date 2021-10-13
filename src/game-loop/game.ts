@@ -3,16 +3,16 @@ import { BaseItemLookup, randomItem } from '../helpers/equipment';
 import { PRNG } from '../helpers/prng';
 import { Character, createCharacter } from '../shared/character';
 import {
-  Connection,
   Dungeon,
-  Entity,
   facingConnection,
-  Point,
-  Room,
 } from './dungeon';
 
 import { MAX_LEVEL } from '../shared/constants';
 import { BaseWeapon, DamageType, isArmorInstance, isBaseArmor, isBaseWeapon, ItemInstance } from '../shared/equipment';
+import type { Entity } from '../shared/entity';
+import type { Point } from '../shared/geometry';
+import type { Connection } from '../shared/connection';
+import { Room } from '../shared/room';
 
 export const TICK_MS = 5000;
 

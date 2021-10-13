@@ -1,4 +1,9 @@
 import { PRNG } from '../helpers/prng.js';
+import { Connection, CONNECTION_TYPES } from '../shared/connection.js';
+import { Direction, DIRECTIONS, Directions } from '../shared/direction.js';
+import { ENTITY_TYPES } from '../shared/entity.js';
+import type { Point, Rectangle } from '../shared/geometry.js';
+import type { Room } from '../shared/room.js';
 
 /*
  * Current algorithm:
@@ -26,22 +31,7 @@ const ROOM_DIMENSIONS = [
   [8, 16, 8, 16], // Huge room
 ];
 
-export interface Point {
-  x: number;
-  y: number;
-}
-
-export interface Rectangle extends Point {
-  w: number;
-  h: number;
-}
-
 type Quad = number[];
-
-const DIRECTIONS_BASE = ['north', 'south', 'west', 'east'] as const;
-export type Direction = typeof DIRECTIONS_BASE[number];
-export type Directions = Set<Direction>;
-export const DIRECTIONS = DIRECTIONS_BASE as never as Direction[];
 
 export const inverseDirection = (direction: Direction): Direction => {
   switch (direction) {
@@ -55,39 +45,6 @@ export const inverseDirection = (direction: Direction): Direction => {
       return 'west';
   }
 };
-
-export const CONNECTION_TYPES_BASE = [
-  'passage',
-  'door',
-  'locked-door',
-] as const;
-export type ConnectionType = typeof CONNECTION_TYPES_BASE[number];
-export const CONNECTION_TYPES =
-  CONNECTION_TYPES_BASE as never as ConnectionType[];
-
-export type RoomRef = number | 'exit';
-
-export interface Connection extends Point {
-  roomRef: RoomRef;
-  type: ConnectionType;
-  direction: Direction;
-}
-
-export const ENTITY_TYPES_BASE = ['trap', 'loot', 'enemy'] as const;
-export type EntityType = typeof ENTITY_TYPES_BASE[number];
-export const ENTITY_TYPES = ENTITY_TYPES_BASE as never as EntityType[];
-
-export interface Entity extends Point {
-  type: EntityType;
-}
-
-// NOTE: A room should really be a collection of rectangles, allowing for irregular shapes; maybe a future consideration
-export interface Room extends Rectangle {
-  index: number;
-  connections: Connection[];
-  entities: Entity[];
-  visited: boolean;
-}
 
 export const relativeDirections = (
   from: Rectangle,
@@ -149,6 +106,7 @@ export const facingConnection = (connection: Connection): Point => {
     case 'east':
       return { x: x - 1, y };
   }
+  throw new Error('Unexpected direction in connection: ' + connection.direction);
 };
 
 export class Dungeon {
