@@ -12,6 +12,7 @@ import type { Snapshot } from '../shared/snapshot';
 export class PageProgress extends PageElement {
   @state() private fastForwardPercent: number|null = null;
   @state() private snapshot: Snapshot|null = null;
+  private snapshots: Snapshot[] = [];
 
   static styles = css`
     :host {
@@ -29,10 +30,6 @@ export class PageProgress extends PageElement {
       flex-direction: column;
       padding: 1rem;
       position: relative;
-    }
-
-    h1 {
-      align-self: center;
     }
 
     #inventory {
@@ -65,6 +62,17 @@ export class PageProgress extends PageElement {
     #inventory ul li rl-item {
       display: inline-block;
     }
+
+    #fastforward h2 {
+      margin-left: 16px;
+    }
+
+    rl-dungeon.thumbnail {
+      width: 128px;
+      height: 128px;
+      margin: 16px;
+      float: left;
+    }
   `;
 
   connectedCallback() {
@@ -89,10 +97,12 @@ export class PageProgress extends PageElement {
       switch (ev.data.type) {
       case 'fast-forward-progress':
         this.snapshot = ev.data.snapshot;
+        this.snapshots.push(this.snapshot);
         this.fastForwardPercent = ~~((100 * ev.data.currentTick) / ev.data.maximumTick);
         break;
       case 'tick-progress':
         this.snapshot = ev.data.snapshot;
+        this.snapshots = [];
         this.fastForwardPercent = null;
         break;
       }
@@ -157,6 +167,25 @@ export class PageProgress extends PageElement {
   }
 
   renderFastForwarding() {
-    return html` <div>Fast forwarding</div> `;
+    return html`
+      <div id="fastforward">
+        <h2>Fast forwarding: ${this.fastForwardPercent}%</h2>
+        ${this.snapshots.map(snapshot => {
+          const { mapSize, location, rooms } = snapshot;
+          if (mapSize && location && rooms) {
+            return html`
+              <rl-dungeon
+                class="thumbnail"
+                .mapSize=${mapSize}
+                .location=${location}
+                .rooms=${rooms}
+              ></rl-dungeon>
+            `;
+          } else {
+            return nothing;
+          }
+        })}
+      </div>
+    `;
   }
 }

@@ -14,9 +14,9 @@ export class PageHome extends PageElement {
   `;
 
   render() {
-    //const day = 1000 * 24 * 60 * 60; // XXX: Useful to pretend the session is old by subtracting from Date.now()
+    const day = 1000 * 24 * 60 * 60; // XXX: Useful to pretend the session is old by subtracting from Date.now()
     const startNew = () => {
-      const session = toBase62(+Date.now());
+      const session = toBase62(+Date.now() - 100*day);
       const url = urlForName('progress', { session });
       window.location.href = url;
     };
