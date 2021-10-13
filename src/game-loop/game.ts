@@ -1,8 +1,7 @@
-/* eslint-disable import/extensions */
 import { fromBase62 } from '../helpers/base62';
-import { randomItem } from '../helpers/equipment';
+import { BaseItemLookup, randomItem } from '../helpers/equipment';
 import { PRNG } from '../helpers/prng';
-import { Character } from './character';
+import { Character, createCharacter } from '../shared/character';
 import {
   Connection,
   Dungeon,
@@ -13,6 +12,7 @@ import {
 } from './dungeon';
 
 import { MAX_LEVEL } from '../shared/constants';
+import { BaseWeapon, DamageType, isArmorInstance, isBaseArmor, isBaseWeapon, ItemInstance } from '../shared/equipment';
 
 export const TICK_MS = 5000;
 
@@ -41,8 +41,6 @@ export type Action =
   | 'traverse-connection'
   | 'return-to-town';
 
-// FIXME: Really really need to clean up the directory structure
-
 export class Game {
   session: string;
   character: Character;
@@ -61,7 +59,7 @@ export class Game {
 
   constructor(session: string) {
     this.session = session;
-    this.character = new Character();
+    this.character = createCharacter();
     this.prng = new PRNG(session);
     this.t0 = fromBase62(session);
     this.t1 = Math.ceil(this.t0 / TICK_MS) * TICK_MS;
@@ -119,7 +117,8 @@ export class Game {
     }
 
     // FIXME: Either figure out how to create/forward a summary from the this.have*() functions,
-    // or get rid of the minor-success style summaries.
+    // or get rid of the minor-success style summaries. Needs to be passed to UI via 
+    // the FastForwardProgressMessage.
     const summary: TickSummary = 'uneventful';
 
     switch (this.lastAction) {
@@ -166,7 +165,7 @@ export class Game {
       );
 
       // For now, we always give one item reglardless of type
-      this.character.addItem(randomItem(this.prng, this.character.level));
+      this.addItem(randomItem(this.prng, this.character.level));
     }
 
     this.approachRemainingEntity() || this.approachConnection();
@@ -241,7 +240,9 @@ export class Game {
     // NOTE: Intentionally keeping lastAction
     if (this.character.inventory.length == 0) return false;
 
-    this.character.sellInventory();
+    this.character.inventory.forEach((item) => (this.character.coin += item.price));
+    this.character.inventory = [];
+
     return true;
   }
 
@@ -300,5 +301,109 @@ export class Game {
     // console.log('REVISITING AN OLD ROOM!', notBack);
 
     return this.prng.pick(notBack);
+  }
+
+  addItem(item: ItemInstance) {
+    const base = BaseItemLookup[item.refId];
+
+    if (isBaseWeapon(base)) {
+      if (base.location == 'main-1h') {
+        const oldMain = this.character.equipment.main;
+
+        if (oldMain && oldMain.price >= item.price) {
+          this.character.inventory.unshift(item);
+          return;
+        }
+
+        this.character.equipment.main = item;
+        if (oldMain) {
+          this.character.inventory.unshift(oldMain);
+        }
+      } else if (base.location == 'main-2h') {
+        const oldMain = this.character.equipment.main;
+        const oldOffhand = this.character.equipment.offhand;
+
+        let oldPrice = 0;
+        if (oldMain) oldPrice += oldMain.price;
+        if (oldOffhand) oldPrice += oldOffhand.price;
+        if (oldPrice >= item.price) {
+          this.character.inventory.unshift(item);
+          return;
+        }
+
+        this.character.equipment.main = item;
+        if (oldMain) {
+          this.character.inventory.unshift(oldMain);
+        }
+        if (oldOffhand) {
+          delete this.character.equipment.offhand;
+          this.character.inventory.unshift(oldOffhand);
+        }
+      } else if (base.location == 'offhand') {
+        // TODO: Price check
+
+        const oldMain = this.character.equipment.main;
+        const oldOffhand = this.character.equipment.offhand;
+        this.character.equipment.main = item;
+        if (oldMain) {
+          const oldMainBase = BaseItemLookup[oldMain.refId];
+          const oldMainIsTwoHanded =
+            (oldMainBase as BaseWeapon).location == 'main-2h';
+          if (oldMainIsTwoHanded) {
+            this.character.inventory.unshift(item);
+            return;
+          }
+        }
+        this.character.equipment.offhand = item;
+        if (oldOffhand) {
+          this.character.inventory.unshift(oldOffhand);
+        }
+      } else if (base.location == 'either') {
+        // TODO: Price check
+
+        const oldMain = this.character.equipment.main;
+        const oldOffhand = this.character.equipment.offhand;
+
+        if (oldOffhand) {
+          this.character.equipment.offhand = item;
+          this.character.inventory.unshift(oldOffhand);
+        } else if (oldMain) {
+          this.character.equipment.main = item;
+          this.character.inventory.unshift(oldMain);
+        } else {
+          this.character.equipment.offhand = item;
+        }
+      }
+    } else if (isBaseArmor(base)) {
+      const oldArmor = this.character.equipment[base.location];
+
+      if (oldArmor && oldArmor.price >= item.price) {
+        this.character.inventory.unshift(item);
+        return;
+      }
+
+      this.character.equipment[base.location] = item;
+      if (oldArmor) {
+        this.character.inventory.unshift(oldArmor);
+      }
+
+      this.recalcTotalMitigation();
+    } else {
+      // Other items, just having a monetary value
+      this.character.inventory.unshift(item);
+    }
+  }
+
+  private recalcTotalMitigation() {
+    this.character.totalMitigation = {};
+    for (const item of Object.values(this.character.equipment)) {
+      if (item && isArmorInstance(item)) {
+        for (const [damageType, value] of Object.entries(item.mitigation)) {
+          const before = this.character.totalMitigation[damageType as DamageType];
+          this.character.totalMitigation[damageType as DamageType] =
+            (before || 0) + (value || 0);
+        }
+      }
+    }
   }
 }

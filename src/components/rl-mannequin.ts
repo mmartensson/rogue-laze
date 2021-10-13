@@ -1,8 +1,8 @@
 /* eslint-disable import/extensions */
 import { LitElement, css, customElement, property, svg } from 'lit-element';
 
-import { Character } from '../types/character';
-import { ArmorInstance, ItemLocation } from '../types/equipment';
+import type { Character } from '../shared/character';
+import type { ArmorInstance, ItemLocation } from '../shared/equipment';
 
 import './rl-item';
 import './rl-item-describer';

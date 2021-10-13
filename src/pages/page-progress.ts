@@ -9,8 +9,8 @@ import '../components/rl-mannequin';
 import '../components/rl-dungeon';
 import '../components/rl-item';
 import '../components/rl-coin';
-import { Game } from '../types/game';
-import { Character } from '../types/character';
+import { Game } from '../game-loop/game';
+import { GameLoopOriginMessage, InitMessage } from '../shared/messages';
 
 // TODO: Add a nifty mouseover for items, for use on mannequin and in inventory and also in prose with associated items
 // (the goblin dropped a [Smelly Spear]).
@@ -87,14 +87,13 @@ export class PageProgress extends PageElement {
     const worker = new Worker(new URL('../game-loop/index.js', import.meta.url), {
       type: 'module'
     });
-    worker.postMessage(['hi']);
-    worker.onmessage = (ev: MessageEvent) => {
+    const init: InitMessage = {
+      type: 'init',
+      session
+    }
+    worker.postMessage(init);
+    worker.onmessage = (ev: MessageEvent<GameLoopOriginMessage>) => {
       console.log('Main got data', ev.data);
-
-      if (ev.data.character) {
-        // Just plain JSON transfer
-        console.log('Did type survive?', ev.data.character instanceof Character);
-      }
     }
   }
 

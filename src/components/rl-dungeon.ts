@@ -3,7 +3,7 @@ import { LitElement, customElement, property, css } from 'lit-element';
 import { nothing, svg } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
 
-import { Dungeon, Room } from '../types/dungeon';
+import { Dungeon, Room } from '../game-loop/dungeon';
 
 @customElement('rl-dungeon')
 export class DungeonElement extends LitElement {

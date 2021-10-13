@@ -1,16 +1,59 @@
-import { Game } from "../types/game";
+import { FAST_FORWARD_PROGRESS_INTERVAL } from "../shared/constants";
+import { FastForwardProgressMessage, TickProgressMessage, UiOriginMessage } from "../shared/messages";
+import { Game } from "./game";
 
-console.log('I am a worker');
+console.log('Game loop worker started and awaiting session.');
 
-const session = 'sLxzloi';
-const game = new Game(session);
-console.log('Worker has a character at level', game.character.level);
+let running = false;
 
-setTimeout(() => console.log('I am still a worker'), 5000);
+self.onmessage = (ev: MessageEvent<UiOriginMessage>) => {
+  if (ev.data.type === 'init') {
+    loop(ev.data.session);
+  }
+}
 
-self.onmessage = (ev: MessageEvent) => {
-  console.log('Worker got data', ev.data);
-  self.postMessage({
-      character: game.character
-  });
+async function loop(session: string) {
+  const game = new Game(session);
+  running = true;
+
+  let fastForward = false;
+  let lastProgress = 0;
+
+  while (running) {
+    const tickEvent = await game.scheduledTick();
+    const { max, current } = tickEvent;
+
+    if (max !== undefined && current !== undefined) {
+      const diff = max - current;
+      if (diff > 100 && !fastForward) {
+        fastForward = true;
+        console.log(`Fast forwarding started. Currenly at tick ${current} of ${max}`);
+        lastProgress = 0;
+      }
+      if (diff < 5 && fastForward) {
+        fastForward = false;
+        console.log(`Fast forwarding ended. Currenly at tick ${current}`);
+      }
+
+      if (fastForward) {
+        const now = +new Date();
+        if (now - lastProgress > FAST_FORWARD_PROGRESS_INTERVAL) {
+          const progress: FastForwardProgressMessage = {
+            type: 'fast-forward-progress',
+            currentTick: current,
+            maximumTick: max,
+          };
+          self.postMessage(progress);
+          lastProgress = now;
+        }        
+      } else {
+        const progress: TickProgressMessage = {
+          type: 'tick-progress',
+          currentTick: current,
+          character: game.character
+        };
+        self.postMessage(progress);
+      }  
+    }
+  }
 }
