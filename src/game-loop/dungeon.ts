@@ -110,6 +110,8 @@ export const facingConnection = (connection: Connection): Point => {
 };
 
 export class Dungeon {
+  // NOTE: Keeping mapSize as a property rather than a constant to allow us small, medium, and large dungeons in the future
+  // (ROOM_DIMENSIONS will need to be updated to match).
   mapSize = 20;
   prng: PRNG;
 

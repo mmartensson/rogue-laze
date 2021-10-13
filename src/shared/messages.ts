@@ -1,4 +1,4 @@
-import type { Character } from "./character";
+import type { Snapshot } from "./snapshot";
 
 export interface InitMessage {
   type: 'init',
@@ -9,12 +9,13 @@ export interface FastForwardProgressMessage {
   type: 'fast-forward-progress';
   currentTick: number;
   maximumTick: number;
+  snapshot: Snapshot;
 }
 
 export interface TickProgressMessage {
   type: 'tick-progress';
   currentTick: number;
-  character: Character;
+  snapshot: Snapshot;
 }
 
 export type UiOriginMessage = InitMessage;

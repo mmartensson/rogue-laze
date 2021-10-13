@@ -1,5 +1,5 @@
 import { FAST_FORWARD_PROGRESS_INTERVAL } from "../shared/constants";
-import { FastForwardProgressMessage, TickProgressMessage, UiOriginMessage } from "../shared/messages";
+import type { FastForwardProgressMessage, TickProgressMessage, UiOriginMessage } from "../shared/messages";
 import { Game } from "./game";
 
 console.log('Game loop worker started and awaiting session.');
@@ -35,6 +35,15 @@ async function loop(session: string) {
         console.log(`Fast forwarding ended. Currenly at tick ${current}`);
       }
 
+      const createSnapshot = () => {
+        return {
+          character: game.character,
+          mapSize: game.dungeon?.mapSize,
+          location: game.dungeon?.location,
+          rooms: game.dungeon?.rooms,
+        }
+      };
+
       if (fastForward) {
         const now = +new Date();
         if (now - lastProgress > FAST_FORWARD_PROGRESS_INTERVAL) {
@@ -42,6 +51,7 @@ async function loop(session: string) {
             type: 'fast-forward-progress',
             currentTick: current,
             maximumTick: max,
+            snapshot: createSnapshot()
           };
           self.postMessage(progress);
           lastProgress = now;
@@ -50,7 +60,7 @@ async function loop(session: string) {
         const progress: TickProgressMessage = {
           type: 'tick-progress',
           currentTick: current,
-          character: game.character
+          snapshot: createSnapshot()
         };
         self.postMessage(progress);
       }  
