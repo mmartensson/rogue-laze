@@ -1,18 +1,20 @@
-/* eslint-disable import/extensions */
 import {
   ArmorInstance,
   BaseArmors,
   BaseItem,
   BaseWeapons,
   DamageType,
+  DamageTypeMitigation,
   DamageTypePrefixes,
   ItemInstance,
   ItemInstanceBase,
-  MAX_LEVEL,
   Rarity,
   RarityPrefixes,
   WeaponInstance,
-} from '../types/equipment';
+} from '../shared/equipment';
+
+import { MAX_LEVEL } from '../shared/constants';
+
 import { PRNG } from './prng';
 
 // FIXME: To some other utility file ... or import a better implementation
@@ -186,7 +188,7 @@ export const randomWeapon = (
 export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
   const baseArmor = prng.pick(BaseArmors);
   const { rows } = baseArmor;
-  const mitigation = clone(baseArmor.mitigation);
+  const mitigation = clone(baseArmor.mitigation) as DamageTypeMitigation;
   const commons = randomItemInstanceCommons(prng, playerLevel, baseArmor);
   const { secondaryDamageType, rarity } = commons;
 

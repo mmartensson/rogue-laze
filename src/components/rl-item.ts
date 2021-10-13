@@ -12,7 +12,8 @@ import {
   DamageTypeToVariantColumn,
   ItemInstance,
   Rarity,
-} from '../types/equipment';
+} from '../shared/equipment';
+
 import {
   registerHoverTarget,
   unregisterHoverTarget,

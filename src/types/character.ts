@@ -9,7 +9,7 @@ import {
   isBaseWeapon,
   ItemInstance,
   ItemLocation,
-} from './equipment';
+} from '../shared/equipment';
 
 const INITIAL_HEALTH = 100;
 

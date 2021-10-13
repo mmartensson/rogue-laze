@@ -9,9 +9,8 @@ import {
   Rarity,
   DamageType,
   isWeaponInstance,
-  WeaponInstance,
   lookupBaseWeapon,
-} from '../types/equipment';
+} from '../shared/equipment';
 
 import './rl-coin';
 

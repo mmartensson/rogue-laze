@@ -11,7 +11,8 @@ import {
   Point,
   Room,
 } from './dungeon';
-import { MAX_LEVEL } from './equipment';
+
+import { MAX_LEVEL } from '../shared/constants';
 
 export const TICK_MS = 5000;
 
