@@ -2,6 +2,7 @@
 import { LitElement, customElement, property, css } from 'lit-element';
 import { svg } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
+import { Direction } from '../shared/direction';
 import type { Point } from '../shared/geometry';
 import type { Room } from '../shared/room';
 
@@ -99,12 +100,25 @@ export class DungeonElement extends LitElement {
   render() {
     const { mapSize, location, rooms } = this;
 
+    // NOTE: The connection symbols are 10x10 and should be placed with a -1,-1 offset relative to the square they are to overlay
     return svg`
     <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 ${mapSize * 8} ${mapSize * 8}">
       <defs>
         <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
           <path d="M 8 0 L 0 0 0 8" />
         </pattern>
+
+        <symbol id="connection-opening">
+          <g>
+            <rect class="connection"       x="0"  y="2" width="10" height="6"></rect>
+            <line class="connection-wall" x1="1" y1="1.5" x2="9" y2="1.5"></line>
+            <line class="connection-wall" x1="1" y1="8.5" x2="9" y2="8.5"></line>
+          </g>
+        </symbol>
+
+        <symbol id="connection-door">
+          <line class="connection-symbol" x1="5" y1="1" x2="5" y2="9"></line>
+        </symbol>
       </defs>
 
       ${rooms.map((room, index) => this.renderRoom(room, index))}
@@ -161,13 +175,33 @@ export class DungeonElement extends LitElement {
 
     const classes = { room: true, visited: room.visited };
     return svg`
-      <g>
-        <rect data-index=${index} class=${classMap(classes)} x=${room.x * 8 + 0.5} y=${room.y * 8 + 0.5} width=${room.w * 8 - 1} height=${room.h * 8 - 1}></rect>
-        <text x=${room.x * 8 + 1} y=${room.y * 8 + 6} class="room-no">${index}</text>
-        ${connections}
-        ${entities}
-      </g>
+      <rect data-index=${index} class=${classMap(classes)} x=${room.x * 8 + 0.5} y=${room.y * 8 + 0.5} width=${room.w * 8 - 1} height=${room.h * 8 - 1}></rect>
+      <text x=${room.x * 8 + 1} y=${room.y * 8 + 6} class="room-no">${index}</text>
+      ${connections}
+      ${entities}
+
+      <use href="#connection-opening" x="-1" y="-1"/>
+
+      ${renderSymbol(1,1,'connection-opening', 'east')}
     `;
   }
   // <text ... alignment-baseline="middle" ... text-anchor="middle"></text>
+}
+
+const renderSymbol = (x: number, y: number, name: string, direction: Direction) => {
+  let deg = 0;
+
+  switch (direction) {
+  case 'east':
+    deg = 90;
+    break;
+  case 'south':
+    deg = 180;
+    break;
+  case 'west':
+    deg = 270;
+    break;
+  }
+
+  return svg`<use href="#${name}" x=${x*8-1} y=${y*8-1} transform="rotate(${deg} ${x*8+4} ${y*8+4})"/>`;
 }
