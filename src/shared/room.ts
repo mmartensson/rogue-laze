@@ -7,4 +7,5 @@ export interface Room extends Rectangle {
   connections: Connection[];
   entities: Entity[];
   visited: boolean;
+  name?: string;
 }
