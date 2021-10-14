@@ -110,14 +110,14 @@ export class DungeonElement extends LitElement {
 
         <symbol id="connection-opening">
           <g>
-            <rect class="connection"       x="0"  y="2" width="10" height="6"></rect>
-            <line class="connection-wall" x1="1" y1="1.5" x2="9" y2="1.5"></line>
-            <line class="connection-wall" x1="1" y1="8.5" x2="9" y2="8.5"></line>
+            <rect class="connection"       x="2"  y="0" width="6" height="10"></rect>
+            <line class="connection-wall" x1="1.5" y1="1" x2="1.5" y2="9"></line>
+            <line class="connection-wall" x1="8.5" y1="1" x2="8.5" y2="9"></line>
           </g>
         </symbol>
 
         <symbol id="connection-door">
-          <line class="connection-symbol" x1="5" y1="1" x2="5" y2="9"></line>
+          <line class="connection-symbol" x1="1" y1="5" x2="9" y2="5"></line>
         </symbol>
       </defs>
 
@@ -132,37 +132,13 @@ export class DungeonElement extends LitElement {
 
   private renderRoom(room: Room, index: number) {
     const connections = room.connections.map((conn) => {
-      if (conn.direction == 'east' || conn.direction == 'west') {
-        return svg`
-          <g>
-            <rect class="connection"         x=${conn.x * 8 - 1}  y=${conn.y * 8 + 1} width=10 height=6></rect>
+      const opening = renderSymbol(conn.x,conn.y,'connection-opening', conn.direction);
+      if (conn.type == 'passage')
+        return opening;
 
-            <line class="connection-wall"   x1=${conn.x * 8}     y1=${conn.y * 8 + 0.5}
-                                            x2=${conn.x * 8 + 8} y2=${conn.y * 8 + 0.5}></line>
+      const detail = renderSymbol(conn.x,conn.y,'connection-door', conn.direction);
 
-            <line class="connection-wall"   x1=${conn.x * 8}     y1=${conn.y * 8 + 7.5}
-                                            x2=${conn.x * 8 + 8} y2=${conn.y * 8 + 7.5}></line>
-
-            <line class="connection-symbol" x1=${conn.x * 8 + 4} y1=${conn.y * 8}
-                                            x2=${conn.x * 8 + 4} y2=${conn.y * 8 + 8}></line>
-          </g>
-      `;
-      } else {
-        return svg`
-          <g>
-            <rect class="connection"         x=${conn.x * 8 + 1}    y=${conn.y * 8 - 1} width=6 height=10></rect>
-
-            <line class="connection-wall"   x1=${conn.x * 8 + 0.5} y1=${conn.y * 8}
-                                            x2=${conn.x * 8 + 0.5} y2=${conn.y * 8 + 8}></line>
-
-            <line class="connection-wall"   x1=${conn.x * 8 + 7.5} y1=${conn.y * 8}
-                                            x2=${conn.x * 8 + 7.5} y2=${conn.y * 8 + 8}></line>
-
-            <line class="connection-symbol" x1=${conn.x * 8}       y1=${conn.y * 8 + 4}
-                                            x2=${conn.x * 8 + 8}   y2=${conn.y * 8 + 4}></line>
-          </g>
-      `;
-      }
+      return [opening, detail];
     });
 
     const entities = room.entities.map((ent) => {
@@ -179,10 +155,6 @@ export class DungeonElement extends LitElement {
       <text x=${room.x * 8 + 1} y=${room.y * 8 + 6} class="room-no">${index}</text>
       ${connections}
       ${entities}
-
-      <use href="#connection-opening" x="-1" y="-1"/>
-
-      ${renderSymbol(1,1,'connection-opening', 'east')}
     `;
   }
   // <text ... alignment-baseline="middle" ... text-anchor="middle"></text>
