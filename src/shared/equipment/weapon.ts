@@ -67,6 +67,10 @@ export interface WeaponInstance extends ItemInstanceBase {
   speed: Speed;
 }
 
+export function isWeaponInstance(item: ItemInstanceBase): item is WeaponInstance {
+  return !!lookupBaseWeapon(item.refId);
+}
+
 export const WeaponDagger: BaseWeapon = {
   id: 'dagger',
   names: ['Dagger', 'Knife', 'Shiv'],

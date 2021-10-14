@@ -19,6 +19,22 @@ async function loop(session: string) {
   let fastForward = false;
   let lastProgress = 0;
 
+  const createSnapshot = () => {
+    return {
+      character: game.character,
+      mapSize: game.dungeon?.mapSize,
+      location: game.dungeon?.location,
+      rooms: game.dungeon?.rooms,
+    }
+  };
+
+  const initalProgress: TickProgressMessage = {
+    type: 'tick-progress',
+    currentTick: 0,
+    snapshot: createSnapshot()
+  };
+  self.postMessage(initalProgress);
+
   while (running) {
     const tickEvent = await game.scheduledTick();
     const { max, current } = tickEvent;
@@ -34,15 +50,6 @@ async function loop(session: string) {
         fastForward = false;
         console.log(`Fast forwarding ended. Currenly at tick ${current}`);
       }
-
-      const createSnapshot = () => {
-        return {
-          character: game.character,
-          mapSize: game.dungeon?.mapSize,
-          location: game.dungeon?.location,
-          rooms: game.dungeon?.rooms,
-        }
-      };
 
       if (fastForward) {
         const now = +new Date();

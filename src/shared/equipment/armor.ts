@@ -61,6 +61,10 @@ export interface ArmorInstance extends ItemInstanceBase {
   mitigation: DamageTypeMitigation;
 }
 
+export function isArmorInstance(item: ItemInstanceBase): item is ArmorInstance {
+  return !!lookupBaseArmor(item.refId);
+}
+
 /*
   Armor TODO:
 

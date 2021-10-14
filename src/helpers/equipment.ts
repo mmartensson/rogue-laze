@@ -1,3 +1,5 @@
+// FIXME: Move this file (or its contents), making it clear that it is only for use within the game-loop worker
+
 import {
   ArmorInstance,
   BaseArmors,

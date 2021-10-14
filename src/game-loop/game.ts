@@ -7,12 +7,13 @@ import {
   facingConnection,
 } from './dungeon';
 
-import { MAX_LEVEL } from '../shared/constants';
-import { BaseWeapon, DamageType, isArmorInstance, isBaseArmor, isBaseWeapon, ItemInstance } from '../shared/equipment';
+import { MAX_LEVEL, TEMPLE_HEALING_PRICE } from '../shared/constants';
+import { ArmorInstance, BaseArmor, BaseWeapon, DamageType, isArmorInstance, isBaseArmor, isBaseWeapon, isWeaponInstance, ItemInstance, WeaponInstance } from '../shared/equipment';
 import type { Entity } from '../shared/entity';
 import type { Point } from '../shared/geometry';
 import type { Connection } from '../shared/connection';
 import { Room } from '../shared/room';
+import { TownDungeon } from './town';
 
 export const TICK_MS = 5000;
 
@@ -44,7 +45,7 @@ export type Action =
 export class Game {
   session: string;
   character: Character;
-  dungeon?: Dungeon;
+  dungeon: Dungeon = TownDungeon;
   prng: PRNG;
   t0: EpochMs; // Exact session start time
   t1: EpochMs; // Time of first tick; after t0 and divisible by TICK_MS
@@ -172,7 +173,8 @@ export class Game {
   }
 
   haveReturnedToTown() {
-    this.sellInventory() || this.visitNewDungeon();
+    this.dungeon = TownDungeon;
+    this.sellInventory() || this.visitTemple() || this.visitNewDungeon();
   }
 
   moveTo(point: Point) {
@@ -200,7 +202,7 @@ export class Game {
   }
 
   traverseConnection() {
-    if (!this.dungeon || !this.lastConnection || this.lastConnection.roomRef === 'exit') {
+    if (!this.lastConnection || this.lastConnection.roomRef === 'exit') {
       this.returnToTown();
       return;
     }
@@ -226,7 +228,7 @@ export class Game {
   }
 
   returnToTown() {
-    this.dungeon = undefined;
+    this.dungeon = TownDungeon;
     this.currentRoom = undefined;
     this.lastConnection = undefined;
     this.lastAction = 'return-to-town';
@@ -240,10 +242,63 @@ export class Game {
     // NOTE: Intentionally keeping lastAction
     if (this.character.inventory.length == 0) return false;
 
+    if (this.character.inventory.find(item => isWeaponInstance(item))) {
+      this.sellWeapons();
+    } else if (this.character.inventory.find(item => isArmorInstance(item))) {
+      this.sellArmors();
+    } else {
+      this.sellGeneral();
+    }
+
     this.character.inventory.forEach((item) => (this.character.coin += item.price));
     this.character.inventory = [];
 
     return true;
+  }
+
+  sellWeapons() {
+    // FIXME: Set location for blacksmith
+    this.character.inventory = this.character.inventory.filter(item => {
+      if (isWeaponInstance(item)) {
+        this.character.coin += item.price;
+        return false;
+      }
+      return true;
+    });
+  }
+
+  sellArmors() {
+    // FIXME: Set location for armorer
+    this.character.inventory = this.character.inventory.filter(item => {
+      if (isArmorInstance(item)) {
+        this.character.coin += item.price;
+        return false;
+      }
+      return true;
+    });
+  }
+
+  sellGeneral() {
+    // FIXME: Set location for general store
+    this.character.inventory.forEach((item) => (this.character.coin += item.price));
+    this.character.inventory = [];
+  }
+
+  visitTemple() {
+    // NOTE: Intentionally keeping lastAction
+
+    if (this.character.curHealth < this.character.maxHealth) {
+      if (this.character.coin >= TEMPLE_HEALING_PRICE) {
+        this.character.curHealth = this.character.maxHealth;
+        this.character.coin -= TEMPLE_HEALING_PRICE;
+
+        // FIXME: Set location for temple
+
+        return true;
+      }
+    }
+
+    return false;
   }
 
   approachRemainingEntity() {
@@ -287,7 +342,7 @@ export class Game {
     }
 
     // Trying to find something new and exciting
-    const unvisited = all.filter((c) => c.roomRef != 'exit' && !this.dungeon?.rooms[c.roomRef].visited);
+    const unvisited = all.filter((c) => c.roomRef != 'exit' && !this.dungeon.rooms[c.roomRef].visited);
     if (unvisited.length > 0) {
       // console.log('PICKING A FRESH ROOM!', unvisited);
       return this.prng.pick(unvisited);
@@ -303,91 +358,103 @@ export class Game {
     return this.prng.pick(notBack);
   }
 
+  addWeapon(base: BaseWeapon, item: WeaponInstance) {
+    const { equipment, inventory } = this.character;
+
+    if (base.location == 'main-1h') {
+      const oldMain = equipment.main;
+
+      if (oldMain && oldMain.price >= item.price) {
+        inventory.unshift(item);
+        return;
+      }
+
+      equipment.main = item;
+      if (oldMain) {
+        inventory.unshift(oldMain);
+      }
+    } else if (base.location == 'main-2h') {
+      const oldMain = equipment.main;
+      const oldOffhand = equipment.offhand;
+
+      let oldPrice = 0;
+      if (oldMain) oldPrice += oldMain.price;
+      if (oldOffhand) oldPrice += oldOffhand.price;
+      if (oldPrice >= item.price) {
+        inventory.unshift(item);
+        return;
+      }
+
+      equipment.main = item;
+      if (oldMain) {
+        inventory.unshift(oldMain);
+      }
+      if (oldOffhand) {
+        delete equipment.offhand;
+        inventory.unshift(oldOffhand);
+      }
+    } else if (base.location == 'offhand') {
+      // TODO: Price check
+
+      const oldMain = equipment.main;
+      const oldOffhand = equipment.offhand;
+      equipment.main = item;
+      if (oldMain) {
+        const oldMainBase = BaseItemLookup[oldMain.refId];
+        const oldMainIsTwoHanded =
+          (oldMainBase as BaseWeapon).location == 'main-2h';
+        if (oldMainIsTwoHanded) {
+          inventory.unshift(item);
+          return;
+        }
+      }
+      equipment.offhand = item;
+      if (oldOffhand) {
+        inventory.unshift(oldOffhand);
+      }
+    } else if (base.location == 'either') {
+      // TODO: Price check
+
+      const oldMain = equipment.main;
+      const oldOffhand = equipment.offhand;
+
+      if (oldOffhand) {
+        equipment.offhand = item;
+        inventory.unshift(oldOffhand);
+      } else if (oldMain) {
+        equipment.main = item;
+        inventory.unshift(oldMain);
+      } else {
+        equipment.offhand = item;
+      }
+    }
+  }
+
+  addArmor(base: BaseArmor, item: ArmorInstance) {
+    const { equipment, inventory } = this.character;
+
+    const oldArmor = equipment[base.location];
+
+    if (oldArmor && oldArmor.price >= item.price) {
+      inventory.unshift(item);
+      return;
+    }
+
+    equipment[base.location] = item;
+    if (oldArmor) {
+      inventory.unshift(oldArmor);
+    }
+
+    this.recalcTotalMitigation();
+  }
+
   addItem(item: ItemInstance) {
     const base = BaseItemLookup[item.refId];
 
     if (isBaseWeapon(base)) {
-      if (base.location == 'main-1h') {
-        const oldMain = this.character.equipment.main;
-
-        if (oldMain && oldMain.price >= item.price) {
-          this.character.inventory.unshift(item);
-          return;
-        }
-
-        this.character.equipment.main = item;
-        if (oldMain) {
-          this.character.inventory.unshift(oldMain);
-        }
-      } else if (base.location == 'main-2h') {
-        const oldMain = this.character.equipment.main;
-        const oldOffhand = this.character.equipment.offhand;
-
-        let oldPrice = 0;
-        if (oldMain) oldPrice += oldMain.price;
-        if (oldOffhand) oldPrice += oldOffhand.price;
-        if (oldPrice >= item.price) {
-          this.character.inventory.unshift(item);
-          return;
-        }
-
-        this.character.equipment.main = item;
-        if (oldMain) {
-          this.character.inventory.unshift(oldMain);
-        }
-        if (oldOffhand) {
-          delete this.character.equipment.offhand;
-          this.character.inventory.unshift(oldOffhand);
-        }
-      } else if (base.location == 'offhand') {
-        // TODO: Price check
-
-        const oldMain = this.character.equipment.main;
-        const oldOffhand = this.character.equipment.offhand;
-        this.character.equipment.main = item;
-        if (oldMain) {
-          const oldMainBase = BaseItemLookup[oldMain.refId];
-          const oldMainIsTwoHanded =
-            (oldMainBase as BaseWeapon).location == 'main-2h';
-          if (oldMainIsTwoHanded) {
-            this.character.inventory.unshift(item);
-            return;
-          }
-        }
-        this.character.equipment.offhand = item;
-        if (oldOffhand) {
-          this.character.inventory.unshift(oldOffhand);
-        }
-      } else if (base.location == 'either') {
-        // TODO: Price check
-
-        const oldMain = this.character.equipment.main;
-        const oldOffhand = this.character.equipment.offhand;
-
-        if (oldOffhand) {
-          this.character.equipment.offhand = item;
-          this.character.inventory.unshift(oldOffhand);
-        } else if (oldMain) {
-          this.character.equipment.main = item;
-          this.character.inventory.unshift(oldMain);
-        } else {
-          this.character.equipment.offhand = item;
-        }
-      }
+      this.addWeapon(base, item as WeaponInstance);
     } else if (isBaseArmor(base)) {
-      const oldArmor = this.character.equipment[base.location];
-
-      if (oldArmor && oldArmor.price >= item.price) {
-        this.character.inventory.unshift(item);
-        return;
-      }
-
-      this.character.equipment[base.location] = item;
-      if (oldArmor) {
-        this.character.inventory.unshift(oldArmor);
-      }
-
-      this.recalcTotalMitigation();
+      this.addArmor(base, item as ArmorInstance);
     } else {
       // Other items, just having a monetary value
       this.character.inventory.unshift(item);
