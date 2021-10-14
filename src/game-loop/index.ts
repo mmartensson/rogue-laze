@@ -35,8 +35,6 @@ async function loop(session: string) {
   };
   self.postMessage(initalProgress);
 
-  running = false; // XXX: Building town
-
   while (running) {
     const tickEvent = await game.scheduledTick();
     const { max, current } = tickEvent;

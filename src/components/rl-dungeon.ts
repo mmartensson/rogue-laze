@@ -1,6 +1,6 @@
 /* eslint-disable import/extensions */
 import { LitElement, customElement, property, css } from 'lit-element';
-import { svg } from 'lit-html';
+import { nothing, svg } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { Direction } from '../shared/direction';
 import type { Point } from '../shared/geometry';
@@ -44,6 +44,9 @@ export class DungeonElement extends LitElement {
     svg .room-no {
       font: 6px sans-serif;
       fill: white;
+    }
+    svg .room-name {
+      font-size: 4px;
     }
     svg .connection {
       fill: hsl(var(--room-hue), var(--room-sat), 60%);
@@ -155,10 +158,15 @@ export class DungeonElement extends LitElement {
       `;
     });
 
+    const name = room.name ? svg`
+      <text x=${room.x * 8 + room.w * 4} y=${room.y * 8 + room.h * 4} dominant-baseline="middle" text-anchor="middle" class="room-name">${room.name}</text>
+    ` : nothing;
+
     const classes = { room: true, visited: room.visited };
     return svg`
       <rect data-index=${index} class=${classMap(classes)} x=${room.x * 8 + 0.5} y=${room.y * 8 + 0.5} width=${room.w * 8 - 1} height=${room.h * 8 - 1}></rect>
       <text x=${room.x * 8 + 1} y=${room.y * 8 + 6} class="room-no">${index}</text>
+      ${name}
       ${connections}
       ${entities}
     `;
