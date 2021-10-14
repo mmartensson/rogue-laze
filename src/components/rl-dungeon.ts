@@ -117,6 +117,12 @@ export class DungeonElement extends LitElement {
         </symbol>
 
         <symbol id="connection-door">
+          <line class="connection-symbol" x1="1"   y1="5" x2="3"   y2="5"></line>
+          <line class="connection-symbol" x1="3.3" y1="5" x2="6.7" y2="5"></line>
+          <line class="connection-symbol" x1="7"   y1="5" x2="9"   y2="5"></line>
+        </symbol>
+
+        <symbol id="connection-locked-door">
           <line class="connection-symbol" x1="1" y1="5" x2="9" y2="5"></line>
         </symbol>
       </defs>
@@ -136,7 +142,7 @@ export class DungeonElement extends LitElement {
       if (conn.type == 'passage')
         return opening;
 
-      const detail = renderSymbol(conn.x,conn.y,'connection-door', conn.direction);
+      const detail = renderSymbol(conn.x,conn.y,'connection-' + conn.type, conn.direction);
 
       return [opening, detail];
     });
