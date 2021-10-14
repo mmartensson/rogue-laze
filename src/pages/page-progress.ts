@@ -13,6 +13,7 @@ export class PageProgress extends PageElement {
   @state() private fastForwardPercent: number|null = null;
   @state() private snapshot: Snapshot|null = null;
   private snapshots: Snapshot[] = [];
+  private gameLoopWorker?: Worker;
 
   static styles = css`
     :host {
@@ -76,7 +77,6 @@ export class PageProgress extends PageElement {
   `;
 
   connectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
 
     const session = this.location?.params?.session as string;
@@ -84,16 +84,17 @@ export class PageProgress extends PageElement {
       window.location.href = '/';
     }
 
-    const worker = new Worker(new URL('../game-loop/index.js', import.meta.url), {
-      type: 'module'
+    this.gameLoopWorker = new Worker(new URL('../game-loop/index.js', import.meta.url), {
+      type: 'module',
+      name: 'game-loop',
     });
     const init: InitMessage = {
       type: 'init',
       session
     }
-    worker.postMessage(init);
+    this.gameLoopWorker.postMessage(init);
 
-    worker.onmessage = (ev: MessageEvent<GameLoopOriginMessage>) => {
+    this.gameLoopWorker.onmessage = (ev: MessageEvent<GameLoopOriginMessage>) => {
       switch (ev.data.type) {
       case 'fast-forward-progress':
         this.snapshot = ev.data.snapshot;
@@ -106,6 +107,16 @@ export class PageProgress extends PageElement {
         this.fastForwardPercent = null;
         break;
       }
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    if (this.gameLoopWorker) {
+      this.gameLoopWorker.postMessage({type: 'shutdown'});
+      this.gameLoopWorker.terminate();
+      this.gameLoopWorker = undefined;
     }
   }
 

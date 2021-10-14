@@ -5,6 +5,10 @@ export interface InitMessage {
   session: string
 }
 
+export interface ShutdownMessage {
+  type: 'shutdown'
+}
+
 export interface FastForwardProgressMessage {
   type: 'fast-forward-progress';
   currentTick: number;
@@ -18,5 +22,5 @@ export interface TickProgressMessage {
   snapshot: Snapshot;
 }
 
-export type UiOriginMessage = InitMessage;
+export type UiOriginMessage = InitMessage | ShutdownMessage;
 export type GameLoopOriginMessage = FastForwardProgressMessage | TickProgressMessage;

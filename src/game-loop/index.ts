@@ -9,10 +9,15 @@ let running = false;
 self.onmessage = (ev: MessageEvent<UiOriginMessage>) => {
   if (ev.data.type === 'init') {
     loop(ev.data.session);
+  } else if (ev.data.type === 'shutdown') {
+    running = false;
+    console.log('Game loop worker shutting down');
   }
 }
 
 async function loop(session: string) {
+  console.log('Game loop worker assigned session', session);
+
   const game = new Game(session);
   running = true;
 
