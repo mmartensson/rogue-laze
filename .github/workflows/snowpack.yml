@@ -1,4 +1,4 @@
-name: Snowpack build
+name: CI
 
 on:
   push:
