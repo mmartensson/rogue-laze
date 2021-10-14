@@ -12,6 +12,8 @@ import { routes } from './routes.js';
 
 const router = new Router();
 
+// FIXME: Switch over to hash based URL, making it easier to host
+
 router.setRoutes([
   // Redirect to URL without trailing slash
   {
