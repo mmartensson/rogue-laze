@@ -68,9 +68,6 @@ export function isArmorInstance(item: ItemInstanceBase): item is ArmorInstance {
 /*
   Armor TODO:
 
-  WizardHat
-  Circlet
-  Robe
   Coat
 
   Cloak
@@ -85,9 +82,6 @@ export function isArmorInstance(item: ItemInstanceBase): item is ArmorInstance {
   Bow
   Headband
   Goggles
-  Jacket1
-  Jacket2
-  Dress
 */
 
 export const ArmorShield: BaseArmor = {
@@ -146,6 +140,50 @@ export const ArmorPlate: BaseArmor = {
   weight: 65,
 };
 
+export const ArmorRobe: BaseArmor = {
+  id: 'robe',
+  names: ['Robe'],
+  location: 'chest',
+  rows: [ArmorRow.Robe],
+  mitigation: {
+    slashing: 1,
+    piercing: 1,
+    fire: 6,
+    cold: 6,
+    lightning: 6,
+  },
+  price: 6000,
+  weight: 3,
+};
+
+export const ArmorJacket: BaseArmor = {
+  id: 'jacket',
+  names: ['Jacket'],
+  location: 'chest',
+  rows: [ArmorRow.Jacket1, ArmorRow.Jacket2],
+  mitigation: {
+    slashing: 2,
+    piercing: 2,
+    bludgeoning: 2,
+  },
+  price: 400,
+  weight: 2,
+};
+
+export const ArmorDress: BaseArmor = {
+  id: 'dress',
+  names: ['Dress'],
+  location: 'chest',
+  rows: [ArmorRow.Dress],
+  mitigation: {
+    slashing: 1,
+    piercing: 1,
+    bludgeoning: 1,
+  },
+  price: 100,
+  weight: 1,
+};
+
 export const ArmorHat: BaseArmor = {
   id: 'hat',
   names: ['Hat'],
@@ -170,6 +208,20 @@ export const ArmorWizardHat: BaseArmor = {
   },
   price: 100,
   weight: 0,
+};
+
+export const ArmorCirclet: BaseArmor = {
+  id: 'circlet',
+  names: ['Circlet'],
+  location: 'head',
+  rows: [ArmorRow.Circlet],
+  mitigation: {
+    radiant: 1,
+    necrotic: 1,
+    force: 1,
+  },
+  price: 500,
+  weight: 1,
 };
 
 export const ArmorHelm: BaseArmor = {
@@ -216,10 +268,14 @@ export const ArmorGauntlets: BaseArmor = {
 export const BaseArmors = [
   ArmorShield,
   ArmorBuckler,
+  ArmorDress,
   ArmorBreastplate,
   ArmorPlate,
+  ArmorRobe,
+  ArmorJacket,
   ArmorHat,
   ArmorWizardHat,
+  ArmorCirclet,
   ArmorHelm,
   ArmorGloves,
   ArmorGauntlets,
