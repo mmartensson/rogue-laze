@@ -108,6 +108,16 @@ export class PageProgress extends PageElement {
         break;
       }
     }
+
+    window.addEventListener('focus', () => {
+      console.log('User is back');
+      this.requestUpdate();
+    });
+    window.addEventListener('blur', () => {
+      console.log('User lost interest');
+      // Do we pause the worker?
+      this.requestUpdate();
+    });
   }
 
   disconnectedCallback() {
@@ -121,7 +131,10 @@ export class PageProgress extends PageElement {
   }
 
   render() {
-    if (this.snapshot === null) {
+    // NOTE: Adding the document.hidden check here to avoid updating the dom when nobody is watching, but mostly to try out a way
+    // of avoiding the character from flying weirdly over the screen because painting was frozen. The 'focus' listener in
+    // connectedCallback() makes sure we get immediate render() when we get back.
+    if (this.snapshot === null || document.hidden) {
       // Expecting this to be the case a very short time (i.e. just a roundtrip to the worker)
       return nothing;
     }

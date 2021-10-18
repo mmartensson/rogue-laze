@@ -13,7 +13,7 @@ import type { Entity } from '../shared/entity';
 import type { Point } from '../shared/geometry';
 import type { Connection } from '../shared/connection';
 import { Room } from '../shared/room';
-import { TownDungeon } from './town';
+import { ArmorerLocation, BlacksmithLocation, StoreLocation, TempleLocation, TownDungeon } from './town';
 
 export const TICK_MS = 5000;
 
@@ -169,7 +169,23 @@ export class Game {
       this.addItem(randomItem(this.prng, this.character.level));
     }
 
-    this.approachRemainingEntity() || this.approachConnection();
+    this.maybeTeleportToTown() || this.approachRemainingEntity() || this.approachConnection();
+  }
+
+  maybeTeleportToTown() {
+    const remainingEnemies = this.dungeon.rooms
+      .flatMap(room => room.entities)
+      .filter(entity => entity.type === 'enemy');
+    
+    if (remainingEnemies.length === 0) {
+      // TODO: Figure out a way to tell the UI to show a fancy teleport animation
+      // Maybe just forward the `lastAction` and add a `teleport-to-town` which is
+      // followed by `return-to-town`.
+      this.returnToTown();
+      return true;
+    }
+
+    return false;
   }
 
   haveReturnedToTown() {
@@ -257,7 +273,7 @@ export class Game {
   }
 
   sellWeapons() {
-    // FIXME: Set location for blacksmith
+    this.dungeon.location = BlacksmithLocation;
     this.character.inventory = this.character.inventory.filter(item => {
       if (isWeaponInstance(item)) {
         this.character.coin += item.price;
@@ -268,7 +284,7 @@ export class Game {
   }
 
   sellArmors() {
-    // FIXME: Set location for armorer
+    this.dungeon.location = ArmorerLocation;
     this.character.inventory = this.character.inventory.filter(item => {
       if (isArmorInstance(item)) {
         this.character.coin += item.price;
@@ -279,7 +295,7 @@ export class Game {
   }
 
   sellGeneral() {
-    // FIXME: Set location for general store
+    this.dungeon.location = StoreLocation;
     this.character.inventory.forEach((item) => (this.character.coin += item.price));
     this.character.inventory = [];
   }
@@ -292,8 +308,7 @@ export class Game {
         this.character.curHealth = this.character.maxHealth;
         this.character.coin -= TEMPLE_HEALING_PRICE;
 
-        // FIXME: Set location for temple
-
+        this.dungeon.location = TempleLocation;
         return true;
       }
     }

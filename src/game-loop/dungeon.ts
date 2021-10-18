@@ -5,6 +5,10 @@ import { ENTITY_TYPES } from '../shared/entity.js';
 import type { Point, Rectangle } from '../shared/geometry.js';
 import type { Room } from '../shared/room.js';
 
+// TODO: Should pass along 'dungeon'|'town'|'encounter' -ish to the Snapshot; if the type is changed, the UI will know that
+// the whole map was in fact replaced. A simple heading can also be rendered. Alternatively, we can randomize
+// something like 'Mansion of the Dastardly Barnacle' | 'Tiny Hamlet' | '4 Angry Wasps'.
+
 /*
  * Current algorithm:
  *

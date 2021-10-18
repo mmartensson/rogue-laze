@@ -2,7 +2,7 @@
 >
 > This project is currently in development.
 
-[![CI](https://github.com/mmartensson/rogue-laze/workflows/CI/badge.svg)](https://github.com/mmartensson/rogue-laze/actions)
+[![CI](https://github.com/mmartensson/rogue-laze/actions/workflows/snowpack.yml/badge.svg)](https://github.com/mmartensson/rogue-laze/actions)
 
 # rogue-laze
 
