@@ -23,7 +23,7 @@ export const TownDungeon = new Dungeon(null as any, 17, [
     w: 12,
     h: 1,
   }
-]);
+], 'town');
 
 // NOTE: May want to move these out for reuse, should we have other manually generated dungeons
 

@@ -143,7 +143,7 @@ export class PageProgress extends PageElement {
       return this.renderFastForwarding();
     }
 
-    const { character, mapSize, location, rooms } = this.snapshot;
+    const { character, mapSize, location, rooms, dungeonType } = this.snapshot;
 
     const inventoryWeight = character.inventory
       .map((item) => item.weight)
@@ -156,6 +156,7 @@ export class PageProgress extends PageElement {
           .mapSize=${mapSize}
           .location=${location}
           .rooms=${rooms}
+          .dungeonType=${dungeonType}
         ></rl-dungeon>
       `;
     } else {

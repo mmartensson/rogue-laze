@@ -30,6 +30,7 @@ async function loop(session: string) {
       mapSize: game.dungeon?.mapSize,
       location: game.dungeon?.location,
       rooms: game.dungeon?.rooms,
+      dungeonType: game.dungeon?.type
     }
   };
 

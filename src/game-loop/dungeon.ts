@@ -1,6 +1,7 @@
 import { PRNG } from '../helpers/prng.js';
 import { Connection, CONNECTION_TYPES } from '../shared/connection.js';
 import { Direction, DIRECTIONS, Directions } from '../shared/direction.js';
+import { DungeonType } from '../shared/dungeon.js';
 import { ENTITY_TYPES } from '../shared/entity.js';
 import type { Point, Rectangle } from '../shared/geometry.js';
 import type { Room } from '../shared/room.js';
@@ -120,10 +121,12 @@ export class Dungeon {
   prng: PRNG;
   rooms: Room[];
   location: Point;
+  type: DungeonType;
 
-  constructor(prng: PRNG, mapSize=20, rooms: null|Room[] = null) {
+  constructor(prng: PRNG, mapSize=20, rooms: null|Room[] = null, type: DungeonType = 'dungeon') {
     this.prng = prng;
     this.mapSize = mapSize;
+    this.type = type;
 
     if (rooms === null) {
       this.rooms = [];

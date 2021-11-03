@@ -1,0 +1,1 @@
+export type DungeonType = 'dungeon' | 'town' | 'encounter';

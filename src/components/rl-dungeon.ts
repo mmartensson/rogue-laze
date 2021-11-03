@@ -3,6 +3,7 @@ import { LitElement, customElement, property, css } from 'lit-element';
 import { nothing, svg } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { Direction } from '../shared/direction';
+import { DungeonType } from '../shared/dungeon';
 import type { Point } from '../shared/geometry';
 import type { Room } from '../shared/room';
 
@@ -11,6 +12,9 @@ export class DungeonElement extends LitElement {
   @property({ attribute: false }) mapSize!: number;
   @property({ attribute: false }) location!: Point;
   @property({ attribute: false }) rooms!: Room[];
+  @property({ attribute: false }) dungeonType!: DungeonType;
+
+  private lastDungeonType: DungeonType = 'town';
 
   static styles = css`
     :host {
@@ -96,12 +100,18 @@ export class DungeonElement extends LitElement {
       stroke-width: 2;
       fill: none;
       animation: wakawaka 0.15s linear infinite alternate;
+    }
+
+    svg #character[smooth] {
       transition: cx 1s linear, cy 1s linear 2s;
     }
   `;
 
   render() {
-    const { mapSize, location, rooms } = this;
+    const { mapSize, location, rooms, dungeonType } = this;
+
+    const dungeonTypeChanged = dungeonType != this.lastDungeonType;
+    this.lastDungeonType = dungeonType;
 
     // NOTE: The connection symbols are 10x10 and should be placed with a -1,-1 offset relative to the square they are to overlay
     return svg`
@@ -134,7 +144,7 @@ export class DungeonElement extends LitElement {
 
       <rect x="0" y="0" width=${mapSize * 8} height=${mapSize * 8} fill="url(#grid)" />
 
-      <circle id="character" cx=${location.x * 8 + 4} cy=${location.y * 8 + 4} r=1></circle>
+      <circle id="character" ?smooth=${!dungeonTypeChanged} cx=${location.x * 8 + 4} cy=${location.y * 8 + 4} r=1></circle>
     </svg>
     `;
   }
