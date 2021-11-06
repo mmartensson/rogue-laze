@@ -405,29 +405,42 @@ export class Game {
     return true;
   }
 
+  currentlyHoldingTwoHanded(): boolean {
+    return lookupBaseWeapon(this.character.equipment.main?.refId || '-')?.location === 'main-2h';
+  }
+
+  // NOTE: As soon as we've picked up a good two handed weapon, it is near impossible to go back to 
+  // 1h+offhand since we only get one piece at a time.
+
   addWeapon(base: BaseWeapon, item: WeaponInstance) {
-    const { equipment, inventory } = this.character;
+    const { inventory } = this.character;
 
     if (base.location === 'main-1h') {
       this.offerReplacement(item, 'main') || inventory.unshift(item);
     } else if (base.location === 'main-2h') {
       this.offerReplacement(item, 'main', 'offhand') || inventory.unshift(item);
     } else if (base.location === 'offhand') {
-      if (lookupBaseWeapon(equipment.main?.refId || '-')?.location === 'main-2h') {
+      if (this.currentlyHoldingTwoHanded()) {
         this.offerReplacement(item, 'offhand', 'main') || inventory.unshift(item);
       } else {
         this.offerReplacement(item, 'offhand') || inventory.unshift(item);
       }
     } else if (base.location === 'either') {
-      this.offerReplacement(item, 'main') || this.offerReplacement(item, 'offhand') || inventory.unshift(item);
+      if (!this.offerReplacement(item, 'main')) {
+        if (this.currentlyHoldingTwoHanded()) {
+          this.offerReplacement(item, 'offhand', 'main') || inventory.unshift(item);
+        } else {
+          this.offerReplacement(item, 'offhand') || inventory.unshift(item);
+        }
+      }
     }
   }
 
   addArmor(base: BaseArmor, item: ArmorInstance) {
-    const { equipment, inventory } = this.character;
+    const { inventory } = this.character;
 
     if (base.location === 'offhand') {
-      if (lookupBaseWeapon(equipment.main?.refId || '-')?.location === 'main-2h') {
+      if (this.currentlyHoldingTwoHanded()) {
         this.offerReplacement(item, 'offhand', 'main') || inventory.unshift(item);
       } else {
         this.offerReplacement(item, 'offhand') || inventory.unshift(item);

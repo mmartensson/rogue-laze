@@ -174,10 +174,6 @@ export const randomWeapon = (
       break;
   }
 
-  if (commons.price > 1000) {
-    console.log('Expensive weapon', commons);
-  }
-
   if (!secondaryDamageType) secondaryDamage = undefined;
 
   return {
