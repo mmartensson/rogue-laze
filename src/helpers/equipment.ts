@@ -40,7 +40,7 @@ export const randomRarityPrefix = (prng: PRNG, rarity: Rarity): string => {
 
 export const randomRarity = (prng: PRNG, playerLevel: number): Rarity => {
   const raw = prng.fraction();
-  const adjusted = raw / Math.log10(MAX_LEVEL - playerLevel + 1);
+  const adjusted = raw / (MAX_LEVEL - playerLevel + 1);
 
   // console.log('Rarity', raw, adjusted);
 
