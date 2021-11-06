@@ -386,8 +386,6 @@ export class Game {
       }
     });
 
-    console.log('offerReplacement', item.price, origPrice, ...locations, item);
-
     if (item.price <= origPrice) {
       return false;
     }

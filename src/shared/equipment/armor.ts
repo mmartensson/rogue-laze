@@ -71,8 +71,6 @@ export function isArmorInstance(item: ItemInstanceBase): item is ArmorInstance {
   Coat
 
   Cloak
-  Boots1
-  Boots2
   Bracers
   Ring
   Necklace
@@ -265,6 +263,33 @@ export const ArmorGauntlets: BaseArmor = {
   weight: 1,
 };
 
+export const ArmorBoots: BaseArmor = {
+  id: 'boots',
+  names: ['Boots'],
+  location: 'leg',
+  rows: [ArmorRow.Boots1],
+  mitigation: {
+    piercing: 1,
+    slashing: 1,
+  },
+  price: 50,
+  weight: 0,
+};
+
+export const ArmorSabatons: BaseArmor = {
+  id: 'sabatons',
+  names: ['Sabatons'],
+  location: 'leg',
+  rows: [ArmorRow.Boots2],
+  mitigation: {
+    piercing: 2,
+    slashing: 2,
+    bludgeoning: 2,
+  },
+  price: 500,
+  weight: 0,
+};
+
 export const BaseArmors = [
   ArmorShield,
   ArmorBuckler,
@@ -279,6 +304,8 @@ export const BaseArmors = [
   ArmorHelm,
   ArmorGloves,
   ArmorGauntlets,
+  ArmorBoots,
+  ArmorSabatons,
 ];
 
 export const lookupBaseArmor = (refId: string) =>
