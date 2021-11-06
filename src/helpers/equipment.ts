@@ -1,5 +1,8 @@
 // FIXME: Move this file (or its contents), making it clear that it is only for use within the game-loop worker
 
+// @ts-ignore -- needs to be configured properly; ts assumes the cjs is used (and broken) whereas snowpack now knows it is the esm version
+import structuredClone from '@ungap/structured-clone';
+
 import {
   ArmorInstance,
   BaseArmors,
@@ -18,9 +21,6 @@ import {
 import { MAX_LEVEL } from '../shared/constants';
 
 import { PRNG } from './prng';
-
-// FIXME: To some other utility file ... or import a better implementation
-const clone = (input: any) => JSON.parse(JSON.stringify(input));
 
 export const randomDamageTypePrefix = (
   prng: PRNG,
@@ -141,7 +141,7 @@ export const randomWeapon = (
   playerLevel: number
 ): WeaponInstance => {
   const baseWeapon = prng.pick(BaseWeapons);
-  const { rows, speed, price } = baseWeapon;
+  const { rows, speed } = baseWeapon;
   const commons = randomItemInstanceCommons(prng, playerLevel, baseWeapon);
   const { rarity, secondaryDamageType } = commons;
   let { name } = commons;
@@ -174,6 +174,10 @@ export const randomWeapon = (
       break;
   }
 
+  if (commons.price > 1000) {
+    console.log('Expensive weapon', commons);
+  }
+
   if (!secondaryDamageType) secondaryDamage = undefined;
 
   return {
@@ -181,7 +185,6 @@ export const randomWeapon = (
     name,
     row,
     speed,
-    price,
     damageMod,
     secondaryDamage,
   };
@@ -190,7 +193,7 @@ export const randomWeapon = (
 export const randomArmor = (prng: PRNG, playerLevel: number): ArmorInstance => {
   const baseArmor = prng.pick(BaseArmors);
   const { rows } = baseArmor;
-  const mitigation = clone(baseArmor.mitigation) as DamageTypeMitigation;
+  const mitigation = structuredClone(baseArmor.mitigation) as DamageTypeMitigation;
   const commons = randomItemInstanceCommons(prng, playerLevel, baseArmor);
   const { secondaryDamageType, rarity } = commons;
 

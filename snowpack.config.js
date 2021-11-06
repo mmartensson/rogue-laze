@@ -17,7 +17,7 @@ module.exports = {
     /* ... */
   ],
   packageOptions: {
-    /* ... */
+    packageExportLookupFields: ['import', 'default']
   },
   devOptions: {
     /* ... */
