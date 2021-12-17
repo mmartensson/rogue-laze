@@ -167,6 +167,13 @@ export class Game {
 
       // For now, we always give one item reglardless of type
       this.addItem(randomItem(this.prng, this.character.level));
+
+      // And just to test out temple healing (healing potions later on), we do just a little bit of damage
+      if (this.lastEntity.type == 'enemy') {
+        // FIXME: This should be done with a fancy function that will cause death, should
+        // we go into the negative.
+        this.character.curHealth--;
+      }
     }
 
     this.maybeTeleportToTown() || this.approachRemainingEntity() || this.approachConnection();
@@ -249,8 +256,12 @@ export class Game {
     this.lastConnection = undefined;
     this.lastAction = 'return-to-town';
 
+    // Currently levelling up after each dungeon
+    // FIXME: Should move this into a fancy function that handles the side effects such as healh adjustments
     if (this.character.level < MAX_LEVEL) {
       this.character.level++;
+      this.character.curHealth += 10;
+      this.character.maxHealth += 10;
     }
   }
 
