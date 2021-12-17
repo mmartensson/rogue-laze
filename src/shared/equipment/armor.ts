@@ -65,23 +65,6 @@ export function isArmorInstance(item: ItemInstanceBase): item is ArmorInstance {
   return !!lookupBaseArmor(item.refId);
 }
 
-/*
-  Armor TODO:
-
-  Coat
-
-  Cloak
-  Bracers
-  Ring
-  Necklace
-  Brooch
-  Comb
-
-  Bow
-  Headband
-  Goggles
-*/
-
 export const ArmorShield: BaseArmor = {
   id: 'shield',
   names: ['Shield'],
@@ -108,6 +91,16 @@ export const ArmorBuckler: BaseArmor = {
   },
   price: 200,
   weight: 3,
+};
+
+export const ArmorCoat: BaseArmor = {
+  id: 'coat',
+  names: ['Coat'],
+  location: 'chest',
+  rows: [ArmorRow.Coat],
+  mitigation: { },
+  price: 20,
+  weight: 2,
 };
 
 export const ArmorBreastplate: BaseArmor = {
@@ -194,6 +187,16 @@ export const ArmorHat: BaseArmor = {
   weight: 0,
 };
 
+export const ArmorGoggles: BaseArmor = {
+  id: 'goggles',
+  names: ['Goggles'],
+  location: 'head',
+  rows: [ArmorRow.Goggles],
+  mitigation: { },
+  price: 200,
+  weight: 0,
+};
+
 export const ArmorWizardHat: BaseArmor = {
   id: 'wizardHat',
   names: ['Wizard Hat'],
@@ -219,6 +222,76 @@ export const ArmorCirclet: BaseArmor = {
     force: 1,
   },
   price: 500,
+  weight: 1,
+};
+
+export const ArmorHeadband: BaseArmor = {
+  id: 'headband',
+  names: ['Headband'],
+  location: 'head',
+  rows: [ArmorRow.Headband],
+  mitigation: { },
+  price: 10,
+  weight: 0,
+};
+
+export const ArmorBow: BaseArmor = {
+  id: 'bow',
+  names: ['Bow'],
+  location: 'accessory',
+  rows: [ArmorRow.Bow],
+  mitigation: { },
+  price: 30,
+  weight: 0,
+};
+
+export const ArmorComb: BaseArmor = {
+  id: 'comb',
+  names: ['Comb'],
+  location: 'accessory',
+  rows: [ArmorRow.Comb],
+  mitigation: { },
+  price: 30,
+  weight: 0,
+};
+
+export const ArmorBrooch: BaseArmor = {
+  id: 'brooch',
+  names: ['Brooch'],
+  location: 'accessory',
+  rows: [ArmorRow.Brooch],
+  mitigation: { },
+  price: 50,
+  weight: 0,
+};
+
+export const ArmorRing: BaseArmor = {
+  id: 'ring',
+  names: ['Ring'],
+  location: 'finger',
+  rows: [ArmorRow.Ring],
+  mitigation: { },
+  price: 200,
+  weight: 0,
+};
+
+export const ArmorNecklace: BaseArmor = {
+  id: 'necklace',
+  names: ['Necklace'],
+  location: 'neck',
+  rows: [ArmorRow.Necklace],
+  mitigation: { },
+  price: 500,
+  weight: 0,
+};
+
+export const ArmorCloak: BaseArmor = {
+  id: 'cloak',
+  names: ['Cloak'],
+  location: 'neck',
+  rows: [ArmorRow.Cloak],
+  mitigation: { },
+  price: 100,
   weight: 1,
 };
 
@@ -263,6 +336,20 @@ export const ArmorGauntlets: BaseArmor = {
   weight: 1,
 };
 
+export const ArmorBracers: BaseArmor = {
+  id: 'bracers',
+  names: ['Bracers'],
+  location: 'arm',
+  rows: [ArmorRow.Bracers],
+  mitigation: {
+    piercing: 1,
+    slashing: 2,
+    bludgeoning: 2,
+  },
+  price: 300,
+  weight: 1,
+};
+
 export const ArmorBoots: BaseArmor = {
   id: 'boots',
   names: ['Boots'],
@@ -294,6 +381,7 @@ export const BaseArmors = [
   ArmorShield,
   ArmorBuckler,
   ArmorDress,
+  ArmorCoat,
   ArmorBreastplate,
   ArmorPlate,
   ArmorRobe,
@@ -301,11 +389,20 @@ export const BaseArmors = [
   ArmorHat,
   ArmorWizardHat,
   ArmorCirclet,
+  ArmorHeadband,
   ArmorHelm,
   ArmorGloves,
+  ArmorBracers,
   ArmorGauntlets,
   ArmorBoots,
   ArmorSabatons,
+  ArmorBow,
+  ArmorComb,
+  ArmorBrooch,
+  ArmorRing,
+  ArmorNecklace,
+  ArmorCloak,
+  ArmorGoggles,
 ];
 
 export const lookupBaseArmor = (refId: string) =>
